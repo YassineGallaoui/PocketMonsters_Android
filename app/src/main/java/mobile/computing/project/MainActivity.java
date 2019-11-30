@@ -1,7 +1,5 @@
 package mobile.computing.project;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,7 +17,7 @@ public class MainActivity extends Activity {
         profilo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent vaiAlProfilo= new Intent(getApplicationContext(), profilo.class);
+                Intent vaiAlProfilo= new Intent(getApplicationContext(), Profilo.class);
                 startActivity(vaiAlProfilo);
             }
         });
@@ -28,7 +26,7 @@ public class MainActivity extends Activity {
         gioca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent vaiAlGioco=new Intent(getApplicationContext(), play.class);
+                Intent vaiAlGioco=new Intent(getApplicationContext(), Play.class);
                 startActivity(vaiAlGioco);
             }
         });

@@ -11,9 +11,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <activity android:name=".play"
+        <activity android:name=".Play"
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
-        <activity android:name=".profilo"
+        <activity android:name=".Profilo"
             android:theme="@android:style/Theme.Light.NoTitleBar"/>
         <activity
             android:name=".SplashScreen"
