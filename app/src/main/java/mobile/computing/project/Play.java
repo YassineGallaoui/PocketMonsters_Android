@@ -36,14 +36,12 @@ public class Play extends Activity {
 
     private MapView mapView;
     public static final String BASE_URL="https://ewserver.di.unimi.it/mobicomp/mostri/";
-    public static final String REGISTER="register.php";
     public static final String GET_MAP="getmap.php";
     public static final String GET_IMAGE="getimage.php";
     public static final String FIGHT_EAT="fighteat.php";
     public static final String RANKING="ranking.php";
     public static final String GET_PROFILE="getprofile.php";
     public static final String SET_PROFILE="setprofile.php";
-    public String session_id;
 
     public RequestQueue myRequestQueue = null;
 
@@ -115,9 +113,10 @@ public class Play extends Activity {
         super.onResume();
         mapView.onResume();
 
+        /*
         myRequestQueue=Volley.newRequestQueue(this);
         JsonObjectRequest register_Request = new JsonObjectRequest
-                (Request.Method.POST, BASE_URL+REGISTER, null, new Response.Listener<JSONObject>() {
+                (Request.Method.POST, BASE_URL+GET_MAP, null, new Response.Listener<JSONObject>() {
 
                     @Override
                     public void onResponse(JSONObject response) {
@@ -133,7 +132,7 @@ public class Play extends Activity {
                 });
 
         myRequestQueue.add(register_Request);
-
+           */
     }
 
     @Override
