@@ -2,4 +2,6 @@
     <string name="app_name">Mostri da tasca</string>
     <string name="play">Play</string>
     <string name="profile">Profile</string>
+    <string name="username">Username</string>
+
 </resources>
