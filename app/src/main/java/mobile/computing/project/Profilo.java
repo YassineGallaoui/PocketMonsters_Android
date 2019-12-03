@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -42,6 +43,7 @@ public class Profilo extends Activity {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+
 
         JSONObject jsonBody = new JSONObject();
         try {
@@ -109,6 +111,46 @@ public class Profilo extends Activity {
                 e.printStackTrace();
             }
         }
+    }
+
+
+    public void saveChanges(View v){
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+        Log.d("sessionId", sessionId);
+
+        Log.d("Fine", "Cliccato fine");
+        //qua dovrò fare una chiamata al server..
+        EditText username=findViewById(R.id.username);
+        String value=username.getText().toString();
+        Log.d("Username", value);
+
+        JSONObject jsonBody= new JSONObject();
+        try{
+            jsonBody.put("session_id", sessionId);
+            jsonBody.put("username", value);
+        }catch(JSONException e){
+            e.printStackTrace();
+        }
+
+        RequestQueue saveQueue= Volley.newRequestQueue(this);
+
+        JsonObjectRequest setProfile_request= new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php", jsonBody,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d("SetProfile", "Andato a buon fine");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("SetProfile", "Andata male");
+                    }
+                }
+        );
+        saveQueue.add(setProfile_request);
     }
 }
 
