@@ -59,9 +59,8 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
     public static final String GET_IMAGE="getimage.php";
     public static final String FIGHT_EAT="fighteat.php";
 
-    private static final String SOURCE_ID = "SOURCE_ID";
-    private static final String ICON_ID = "ICON_ID";
-    private static final String LAYER_ID = "LAYER_ID";
+    private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
+    private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
 
     public Location ultimaPosizione;
     private MapView mapView;
@@ -79,8 +78,8 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
-        //CHIEDO I PERMESSI PER USARE LA POSIZIONE
 
+        //CHIEDO I PERMESSI PER USARE LA POSIZIONE
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,
@@ -88,8 +87,7 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                     0);
         }
 
-        mapView.getMapAsync(this);
-
+        //GESTIONE BOTTONE INDIETRO
         Button btnindietro=findViewById(R.id.button3);
         btnindietro.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,46 +96,9 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                 startActivity(vaiIndietro);
             }
         });
-
     }
 
 
-    //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case 0: {
-                if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
-                    Intent tornaIndietro=new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(tornaIndietro);
-                }
-            }
-        }
-    }
-
-
-    public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
-                if(find){
-                    CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(lat, lon))
-                            .zoom(17)
-                            .tilt(50)
-                            .bearing(0)
-                            .build();
-                    return position;
-                } else {
-                    CameraPosition position = new CameraPosition.Builder()
-                            .target(new LatLng(lat, lon))
-                            .zoom(0)
-                            .tilt(0)
-                            .bearing(0)
-                            .build();
-                    return position;
-                }
-
-            }
 
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
@@ -148,38 +109,58 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
 
-                        List<Feature> symbolLayerIconFeatureList = new ArrayList<>();
+                        //POSIZIONO LE ICONE SULLA MAPPA
+                        List<Feature> symbolLayerMonsterFeatureList = new ArrayList<>();
+                        List<Feature> symbolLayerCandyFeatureList = new ArrayList<>();
                         ArrayList<Oggetto> oggetti = OggettiMappa.getInstance().getOggettiMappaList();
 
-                        Log.d("Play","Sono dentro la funzione onMapReady.");
                         Log.d("Play","La dimensione dell'arraylist è: "+OggettiMappa.getInstance().getSize());
-                        Log.d("Play","Arraylist :  "+oggetti);
 
                         for(int j=0; j<OggettiMappa.getInstance().getSize(); j++){
-
                             Oggetto obj=oggetti.get(j);
-                            if(obj.getType()=="MO"){
-                                Double lat=obj.getLat();
-                                Log.d("Play","Latitudine: "+lat);
-                                Double lon=obj.getLon();
-                                Log.d("Play","Longitudine: "+lon);
-                                symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                                        Point.fromLngLat(lon, lat)));
+                            String tipoObj=obj.getType();
+                            Double lat=obj.getLat();
+                            Double lon=obj.getLon();
+
+                            if(tipoObj.equals("MO")){
+                                symbolLayerMonsterFeatureList.add(Feature.fromGeometry(Point.fromLngLat(lon, lat)));
+                            }else{
+                                symbolLayerCandyFeatureList.add(Feature.fromGeometry(Point.fromLngLat(lon, lat)));
                             }
                         }
 
-                        style.addSource(new GeoJsonSource(SOURCE_ID,
-                                FeatureCollection.fromFeatures(symbolLayerIconFeatureList)));
+                        // Add the SymbolLayer icon image to the map style
+                        style.addSource(new GeoJsonSource("SOURCEMOSTRI_ID",
+                                FeatureCollection.fromFeatures(symbolLayerMonsterFeatureList)));
 
-                        style.addImage(ICON_ID, BitmapFactory.decodeResource(
+                        style.addSource(new GeoJsonSource("SOURCECANDY_ID",
+                                FeatureCollection.fromFeatures(symbolLayerCandyFeatureList)));
+
+                        // Adding a GeoJson source for the SymbolLayer icons
+                        style.addImage("ICONMOSTRI_ID", BitmapFactory.decodeResource(
                                 Play.this.getResources(), R.drawable.monster_icon));
 
-                        style.addLayer(new SymbolLayer(LAYER_ID, SOURCE_ID)
-                                .withProperties(PropertyFactory.iconImage(ICON_ID),
+                        style.addImage("ICONCANDY_ID", BitmapFactory.decodeResource(
+                                Play.this.getResources(), R.drawable.candy_icon));
+
+
+
+                        // Adding the actual SymbolLayer to the map style. An offset is added that the bottom of the red
+                        // marker icon gets fixed to the coordinate, rather than the middle of the icon being fixed to
+                        // the coordinate point. This is offset is not always needed and is dependent on the image
+                        // that you use for the SymbolLayer icon.
+                        style.addLayer(new SymbolLayer(LAYER_MOSTRI, "SOURCEMOSTRI_ID")
+                                .withProperties(PropertyFactory.iconImage("ICONMOSTRI_ID"),
                                         iconAllowOverlap(true),
                                         iconOffset(new Float[]{0f, -9f})));
 
-                        //PRENDO L'ULTIMA POSIZIONE NOTA
+                        style.addLayer(new SymbolLayer(LAYER_CARAMELLE, "SOURCECANDY_ID")
+                                .withProperties(PropertyFactory.iconImage("ICONCANDY_ID"),
+                                        iconAllowOverlap(true),
+                                        iconOffset(new Float[]{0f, -9f})));
+
+
+                        //PRENDO L'ULTIMA POSIZIONE NOTA E MI POSIZIONO LÌ
                         fusedLocationClient = LocationServices.getFusedLocationProviderClient(Play.this);
                         fusedLocationClient.getLastLocation()
                                 .addOnSuccessListener(Play.this, new OnSuccessListener<Location>() {
@@ -189,37 +170,33 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                                         Log.d("Play", "La posizione rilevata è la seguente: "+location);
                                         ultimaPosizione=location;
                                         if (location != null) {     //IN REALTÀ CI VANNO I LOCATION.GET()
-                                            double lat=45.476677;//location.getLatitude();
-                                            double lon=9.231477;//location.getLongitude();
+                                            double lat=45.472806;//location.getLatitude();
+                                            double lon=9.182028;//location.getLongitude();
                                             mapboxMap.animateCamera(newCameraPosition(
                                                     impostaPosizione(lat,lon,true)), 5000);
                                         } else {Log.d("Play","Nessuna posizione rilevata");
                                             mapboxMap.animateCamera(newCameraPosition(impostaPosizione
-                                                            (45.476682, 9.231629, false)),
+                                                            (45.472806, 9.182028, false)),
                                                     5000);
                                             Toast.makeText(getApplicationContext(), "Nessuna posizione rilevata", Toast.LENGTH_SHORT).show();
                                         }
                                     }
                                 });
+
                     }
                 }
         );
 
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        mapView.onStart();
-    }
 
     @Override
     public void onResume() {
         super.onResume();
         mapView.onResume();
 
+        //CHIEDO AL SERVER QUALI SONO GLI OGGETTI PRESENTI NELLA MAPPA E LI SALVO
         myRequestQueue= Volley.newRequestQueue(this);
-
         JSONObject jsonBody = new JSONObject();
         try {
             //vado a prendere il mio session_id dalle shared preferences
@@ -231,9 +208,8 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
             Log.d("Play","Ottimo, ho aggiunto l'id alla chiamata:"+ses_ID);
         } catch (JSONException e) {
             e.printStackTrace();
-            Log.d("Play","Male, NON ho aggiunto l'id alla chiamata.");
+            Log.d("Play","Male, NON sono riuscito ad aggiungere l'id alla chiamata.");
         }
-
 
         JsonObjectRequest getMap_Request = new JsonObjectRequest
                 (Request.Method.POST, BASE_URL + GET_MAP, jsonBody, new Response.Listener<JSONObject>() {
@@ -243,19 +219,22 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                         //aggiungo ciò che ho trovato nel model, però
                         OggettiMappa.getInstance().populate(response);
                         Log.d("Play", "Bene, ho chiesto la mappa");
-
+                        mapView.getMapAsync(Play.this);
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        // TODO: Handle error
-                        Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto :(");
+                        Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
                     }
                 });
 
         myRequestQueue.add(getMap_Request);
+    }
 
-        mapView.getMapAsync(this);
+    @Override
+    public void onStart() {
+        super.onStart();
+        mapView.onStart();
     }
 
     @Override
@@ -334,6 +313,41 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
 
     }
 
+    //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
+                    Intent tornaIndietro=new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(tornaIndietro);
+                }
+            }
+        }
+    }
+
+    //SETTO LA POSIZIONE DELLA CAMERA
+    public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
+        if(find){
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(new LatLng(lat, lon))
+                    .zoom(9)
+                    .tilt(50)
+                    .bearing(0)
+                    .build();
+            return position;
+        } else {
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(new LatLng(lat, lon))
+                    .zoom(0)
+                    .tilt(0)
+                    .bearing(0)
+                    .build();
+            return position;
+        }
+    }
 
     @Override
     public boolean onMapClick(@NonNull LatLng point) {
