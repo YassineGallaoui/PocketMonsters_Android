@@ -170,8 +170,8 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
                                         Log.d("Play", "La posizione rilevata è la seguente: "+location);
                                         ultimaPosizione=location;
                                         if (location != null) {     //IN REALTÀ CI VANNO I LOCATION.GET()
-                                            double lat=45.472806;//location.getLatitude();
-                                            double lon=9.182028;//location.getLongitude();
+                                            double lat=location.getLatitude();
+                                            double lon=location.getLongitude();
                                             mapboxMap.animateCamera(newCameraPosition(
                                                     impostaPosizione(lat,lon,true)), 5000);
                                         } else {Log.d("Play","Nessuna posizione rilevata");
