@@ -333,7 +333,7 @@ public class Play extends Activity  implements OnMapReadyCallback, MapboxMap.OnM
         if(find){
             CameraPosition position = new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
-                    .zoom(9)
+                    .zoom(17)
                     .tilt(50)
                     .bearing(0)
                     .build();
