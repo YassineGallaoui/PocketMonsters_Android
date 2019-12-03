@@ -3,5 +3,6 @@
     <string name="play">Play</string>
     <string name="profile">Profile</string>
     <string name="username">Username</string>
+    <string name="preference_file_session_id" />
 
 </resources>

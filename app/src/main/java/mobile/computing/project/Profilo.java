@@ -37,13 +37,13 @@ public class Profilo extends Activity {
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
 
-        JsonObjectRequest getProfileRequest = new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
+        JsonObjectRequest getProfile_Request = new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
                 jsonBody,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("Example5", response.toString());
-                        getProfileResponse(response);
+                        getProfile_Response(response);
                     }
                 },
                 new Response.ErrorListener() {
@@ -55,10 +55,10 @@ public class Profilo extends Activity {
                 }
         );
 
-        requestQueue.add(getProfileRequest);
+        requestQueue.add(getProfile_Request);
     }
 
-    public void getProfileResponse(JSONObject response){
+    public void getProfile_Response(JSONObject response){
 
 
     }
