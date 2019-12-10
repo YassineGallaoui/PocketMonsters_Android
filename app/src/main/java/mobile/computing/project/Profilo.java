@@ -1,19 +1,18 @@
 package mobile.computing.project;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,16 +26,19 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class Profilo extends Activity {
     private int PICK_IMAGE_REQUEST = 1;
+    private String imgBase64;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
     }
+
 
     protected void onResume() {
         super.onResume();
@@ -59,14 +61,14 @@ public class Profilo extends Activity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("Example5", response.toString());
+                        Log.d("Richiesta a buon fine", response.toString());
                         getProfile_Response(response);
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "richiesta fallita", Toast.LENGTH_SHORT);
+                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
                         toast.show();
                     }
                 }
@@ -80,10 +82,20 @@ public class Profilo extends Activity {
         TextView profileLP= findViewById(R.id.profileLP);
         TextView username= findViewById(R.id.username);
         User u= new User(response);
+        ImageView profileImage= findViewById(R.id.profileImage);
+        // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
+        if (u.getImage()!= null) {
+            String imgBase64 = u.getImage();
+            Bitmap img = base64ToBitmap(imgBase64);
+            profileImage.setImageBitmap(img);
+            Log.d("immagine", String.valueOf(img));
+
+        }
         profileXP.setText(Integer.toString(u.getXP()) + " XP");
         profileLP.setText(Integer.toString(u.getLP())+ " LP");
         username.setText(u.getUsername());
         Log.d("getProfileResponse", "sono Entrato" );
+
     }
 
     public void apriLibreria(View v){
@@ -103,10 +115,13 @@ public class Profilo extends Activity {
 
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-                // Log.d(TAG, String.valueOf(bitmap));
+                Log.d("immagine", String.valueOf(bitmap));
 
-                ImageView imageView =findViewById(R.id.button);
+                ImageView imageView =findViewById(R.id.profileImage);
                 imageView.setImageBitmap(bitmap);
+                imgBase64= bitmapToBase64(bitmap);
+                Log.d("base64",bitmapToBase64(bitmap));
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -130,6 +145,7 @@ public class Profilo extends Activity {
         try{
             jsonBody.put("session_id", sessionId);
             jsonBody.put("username", value);
+            jsonBody.put("img", imgBase64);
         }catch(JSONException e){
             e.printStackTrace();
         }
@@ -151,6 +167,18 @@ public class Profilo extends Activity {
                 }
         );
         saveQueue.add(setProfile_request);
+    }
+
+    private String bitmapToBase64(Bitmap bitmap){
+        ByteArrayOutputStream byteArrayOutputStream= new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        byte[] byteArray= byteArrayOutputStream.toByteArray();
+        return Base64.encodeToString(byteArray, Base64.DEFAULT);
+    }
+
+    private Bitmap base64ToBitmap(String b64){
+        byte[] imageAsBytes= Base64.decode(b64.getBytes(), Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(imageAsBytes,0, imageAsBytes.length);
     }
 }
 

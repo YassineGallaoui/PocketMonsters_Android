@@ -39,7 +39,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button gioca=findViewById(R.id.button);
+        Button gioca=findViewById(R.id.profileImage);
         gioca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

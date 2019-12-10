@@ -40,7 +40,7 @@ public class User {
         this.username= username;
     }
 
-    public String image(){
+    public String getImage(){
         return image;
     }
 
