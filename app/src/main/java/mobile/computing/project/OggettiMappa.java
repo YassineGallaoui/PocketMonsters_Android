@@ -29,12 +29,15 @@ public class OggettiMappa {
                 JSONObject singoloOggettoJSON = OggettiMappaJSON.getJSONObject(i);
                 Oggetto oggetto = new Oggetto(singoloOggettoJSON);
                 OggettiMappaList.add(oggetto);
-                Log.d("OggettiMappa","Ho appena aggiunto l'elemento numero "+i);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public void svuota(){
+        OggettiMappaList.clear();
     }
 
     public int getSize(){
