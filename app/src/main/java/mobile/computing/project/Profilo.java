@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,6 +38,24 @@ public class Profilo extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
+
+        Button goToRanking=findViewById(R.id.button5);
+        goToRanking.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
+                startActivity(vaiAClassifica);
+            }
+        });
+
+        final Button goBack=findViewById(R.id.button3);
+        goBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent vaiIndietro= new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(vaiIndietro);
+            }
+        });
     }
 
 
@@ -180,5 +199,7 @@ public class Profilo extends Activity {
         byte[] imageAsBytes= Base64.decode(b64.getBytes(), Base64.DEFAULT);
         return BitmapFactory.decodeByteArray(imageAsBytes,0, imageAsBytes.length);
     }
+
+
 }
 

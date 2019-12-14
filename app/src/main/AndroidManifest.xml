@@ -13,6 +13,8 @@
 
         <activity android:name=".Play"
             android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
+        <activity android:name=".Classifica"
+            android:theme="@android:style/Theme.Light.NoTitleBar"></activity>
         <activity android:name=".Profilo"
             android:theme="@android:style/Theme.Light.NoTitleBar"/>
         <activity
