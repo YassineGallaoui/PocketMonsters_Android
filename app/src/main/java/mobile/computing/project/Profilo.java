@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,6 +38,16 @@ public class Profilo extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
+
+        Button indietro = findViewById(R.id.button3);
+
+        indietro.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent vaiIndietro=new Intent(Profilo.this, MainActivity.class);
+                startActivity(vaiIndietro);
+            }
+        });
     }
 
 

@@ -11,9 +11,11 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".infoOggetto"
-            android:theme="@style/infoObjTheme"
-            ></activity>
+        <activity android:name=".infoRisultato"
+            android:theme="@style/infoObjTheme" />
+        <activity
+            android:name=".infoOggetto"
+            android:theme="@style/infoObjTheme" />
         <activity
             android:name=".Play"
             android:theme="@android:style/Theme.Light.NoTitleBar" />

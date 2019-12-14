@@ -69,11 +69,11 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     public static final String BASE_URL="https://ewserver.di.unimi.it/mobicomp/mostri/";
     public static final String GET_MAP="getmap.php";
     public static final String GET_IMAGE="getimage.php";
-    public static final String FIGHT_EAT="fighteat.php";
 
     private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
     private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
 
+    public String immBase64= "";
     public Location ultimaPosizione;
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -197,7 +197,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
 
                     @Override
                     public void onResponse(JSONObject response) {
-                        //aggiungo ciò che ho trovato nel model, però
                         OggettiMappa.getInstance().svuota();
                         OggettiMappa.getInstance().populate(response);
                         Log.d("Play", "Ho chiesto la mappa");
@@ -399,9 +398,9 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
 
     }*/ //È DA FARE?
 
-        //QUANDO CLICCO SU UNA ICONA
-    public boolean clickIcona(@NonNull LatLng point) {
 
+        //QUANDO CLICCO SU UNA ICONA
+    public void clickIcona(@NonNull LatLng point) {
 
         PointF screenPoint = mapboxMap.getProjection().toScreenLocation(point);
         List<Feature> featuresMostri = mapboxMap.queryRenderedFeatures(screenPoint, LAYER_MOSTRI);
@@ -417,17 +416,13 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             Point position = (Point) selectedFeature.geometry();
             latm = position.latitude();
             lonm = position.longitude();
-            Log.d("Play", "You selected monster with coordinates: " + latm + "," + lonm);
         }
-
         if (!featuresCandy.isEmpty() && featuresMostri.isEmpty()) {
             Feature selectedFeature = featuresCandy.get(0);
             Point position = (Point) selectedFeature.geometry();
             latc = position.latitude();
             lonc = position.longitude();
-            Log.d("Play", "You selected a candy with coordinates: " + latc + "," + lonc);
         }
-
         if (!featuresCandy.isEmpty() && !featuresMostri.isEmpty()) {
             Feature selectedFeature = featuresCandy.get(0);
             Point position1 = (Point) selectedFeature.geometry();
@@ -437,15 +432,11 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             lonm = position1.longitude();
             latc = position2.latitude();
             lonc = position2.longitude();
-            Log.d("Play", "You have selected a candy and a monster with coordinates: " + latc + "," + lonc);
-            Log.d("Play", "Doyou want to eat a candy or fight a monster?: " + latc + "," + lonc);
         }
-
         if (featuresCandy.isEmpty() && featuresMostri.isEmpty())
-            return false;
+            return;
 
-
-        //prendo altitudine e longitudine del punto cliccato
+        //prendo gli oggetti che ci sono sulla mappa
         ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
 
         //cerco l'id dell'oggetto cliccato perchè serve per la chiamata
@@ -461,87 +452,81 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             if((obj.getLat()==latm && obj.getLon()==lonm)||(obj.getLat()==latc && obj.getLon()==lonc)){
                 nOggetto=obj.getId();
                 posizione=i;
-                Log.d("Play","L'id è: "+nOggetto+" e la posizione nell'array è: "+posizione);
                 break;
             }
         }
+
+            //Se NON trovo nessun oggetto con quell'ID
         if(nOggetto==-1 || objs.get(posizione).getId()!=nOggetto) {
             Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
-            return false;
-        } else {
-            Oggetto obj=objs.get(posizione);
-            Log.d("Play","ID="+nOggetto+", tipo="+obj.getType()+", Latitudine="+obj.getLat()+", Longituine="+obj.getLon()
-                    +", size="+obj.getSize()+", nome="+obj.getName());
-            Intent apriInfo=new Intent(Play.this, infoOggetto.class);
-
-            //faccio la chiamata pe prendere la strigna che rappresenta l'immagine
-
-                //prendo il mio session id perchè serve per la chiamata
-                SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                        getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-                String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-
-                //sono pronto per fare la chiamata
-                myRequestQueue= Volley.newRequestQueue(this);
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    //metto il valore della session_id e del target_id nella stringa della richiesta
-                    jsonBody.put("session_id", sessionId);
-                    Log.d("Play","Ok, ho aggiunto l'id alla chiamata:"+sessionId);
-                    jsonBody.put("target_id", nOggetto);
-                    Log.d("Play","Ok, ho aggiunto l'id del target:"+nOggetto);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                    Log.d("Play","Male, NON sono riuscito ad aggiungere il session-ID e il target-ID alla chiamata.");
-                }
-
-            final String[] imgb64 = new String[1];
-                JsonObjectRequest getImage_Request = new JsonObjectRequest
-                    (Request.Method.POST, BASE_URL + GET_IMAGE, jsonBody, new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            //aggiungo ciò che ho trovato nel model, però
-
-                            try {
-                                imgb64[0] =response.getString("img");
-                                Log.d("Play","CODICE IMMAGINE: "+imgb64[0]);
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-                            Log.d("Play", "Bene, ho preso l'immagine in base64");
-                        }
-                    }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
-                        }
-                    });
-
-                myRequestQueue.add(getImage_Request);
-
-            Log.d("Play","Codice dell'immagine: "+imgb64[0]);
-            //apriInfo.putExtra("img", imgb64[0]);
-            apriInfo.putExtra("id", nOggetto);
-            apriInfo.putExtra("tipo", obj.getType());
-            double cifre = Math.pow(10, 4);
-            apriInfo.putExtra("lat", Double.toString(Math.round(obj.getLat() * cifre) / cifre));
-            apriInfo.putExtra("lon", Double.toString(Math.round(obj.getLon() * cifre) / cifre));
-            apriInfo.putExtra("size", obj.getSize());
-            apriInfo.putExtra("nome", obj.getName());
-            startActivity(apriInfo);
+            return;
+        }
+        if(nOggetto!=-1 || objs.get(posizione).getId()==nOggetto) { //Se trovo un oggetto con quell'ID
+            //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
+            richiediInfoOggetto(nOggetto, posizione);
+            return;
         }
 
-        /*
-
-
-
-
-
-            */
-        return false;
     }
 
+        //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
+    public void richiediInfoOggetto(final int numeroOggetto, final int posizione){
+        //prendo il mio session id perchè serve per la chiamata
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+
+        //sono pronto per fare la chiamata
+        myRequestQueue= Volley.newRequestQueue(this);
+        JSONObject jsonBody = new JSONObject();
+        try {
+            //metto il valore della session_id e del target_id nella stringa della richiesta
+            jsonBody.put("session_id", sessionId+"");
+            Log.d("Play" ,"Il session id che ho messo è: "+sessionId);
+            jsonBody.put("target_id", numeroOggetto+"");
+            Log.d("Play" ,"Il target id che ho messo è: "+numeroOggetto);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest getImage_Request = new JsonObjectRequest
+                (Request.Method.POST, BASE_URL + GET_IMAGE, jsonBody, new Response.Listener<JSONObject>() {
+
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            immBase64=response.getString("img");
+                            mostraOggetto(numeroOggetto, posizione);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
+                    }
+                });
+
+        myRequestQueue.add(getImage_Request);
+    }
+
+    //PROVA A DIVIDERE I DUE PROCESSI...
+    public void mostraOggetto(int nOggetto, int posizione){
+        ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
+        Oggetto obj=objs.get(posizione);
+        Intent apriInfo=new Intent(this, infoOggetto.class);
+
+        apriInfo.putExtra("id", nOggetto+"");
+        apriInfo.putExtra("tipo", obj.getType());
+        double cifre = Math.pow(10, 4);
+        apriInfo.putExtra("lat", Double.toString(Math.round(obj.getLat() * cifre) / cifre));
+        apriInfo.putExtra("lon", Double.toString(Math.round(obj.getLon() * cifre) / cifre));
+        apriInfo.putExtra("size", obj.getSize());
+        apriInfo.putExtra("nome", obj.getName());
+        apriInfo.putExtra("img", immBase64);
+        startActivity(apriInfo);
+    }
 
     @Override
     public void onCameraTrackingDismissed() {
