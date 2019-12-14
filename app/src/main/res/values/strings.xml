@@ -4,5 +4,7 @@
     <string name="profile">Profile</string>
     <string name="username">Username</string>
     <string name="preference_file_session_id" />
+    <string name="preference_img_code" />
+    <string name="preference_img" />
 
 </resources>

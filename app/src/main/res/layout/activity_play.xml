@@ -18,7 +18,7 @@
         mapbox:mapbox_cameraTargetLat="45.464175"
         mapbox:mapbox_cameraTargetLng="9.190233"
         mapbox:mapbox_cameraZoom="16"
-        mapbox:mapbox_uiRotateGestures="false"/>
+        mapbox:mapbox_uiRotateGestures="false" />
 
     <Button
         android:id="@+id/button3"
@@ -29,4 +29,16 @@
         android:text="Indietro"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/buttonYou"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="24dp"
+        android:text="YOU"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
