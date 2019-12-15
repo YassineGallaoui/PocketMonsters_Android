@@ -3,6 +3,7 @@ package mobile.computing.project;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -10,16 +11,19 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -27,14 +31,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapbox.android.core.permissions.PermissionsListener;
-import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
-import com.mapbox.geojson.GeoJson;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
@@ -53,13 +54,10 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
@@ -69,19 +67,16 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     public static final String BASE_URL="https://ewserver.di.unimi.it/mobicomp/mostri/";
     public static final String GET_MAP="getmap.php";
     public static final String GET_IMAGE="getimage.php";
-
     private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
     private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
-
     public String immBase64= "";
     public Location ultimaPosizione;
     private MapView mapView;
     private MapboxMap mapboxMap;
     private FusedLocationProviderClient fusedLocationClient;
-    private PermissionsManager permissionsManager;
     private LocationComponent locationComponent;
     private boolean isInTrackingMode;
-    boolean trovato=false;
+    int primaVolta=-1;
     public RequestQueue myRequestQueue = null;
 
     @Override
@@ -89,7 +84,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, "pk.eyJ1IjoieWFzc2luZTk3IiwiYSI6ImNrMzVtZWFwMjA5MmEzZHFqdDRiNGExMzIifQ.gemPT-eRrkMTbxLOB_517w");
         setContentView(R.layout.activity_play);
-
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
@@ -113,7 +107,8 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         });
     }
 
-    @Override       //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
+    //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
+    @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         switch (requestCode) {
             case 0: {
@@ -126,7 +121,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         }
     }
 
-                    //TROVO POSIZIONE ATTUALE USER
+        //TROVO POSIZIONE ATTUALE USER
     public void doveSono(){
         //PRENDO L'ULTIMA POSIZIONE NOTA E MI POSIZIONO LÌ
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(Play.this);
@@ -137,7 +132,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                         // Got last known location. In some rare situations this can be null.
                         ultimaPosizione=location;
                         if (location != null) {   //IN REALTÀ CI VANNO I LOCATION.GET()
-                            Log.d("Play", "L'ultima posizione trovata è la seguent: "+location);
+                            Log.d("Play", "Ultima posizione rilevata");
                             double lat=location.getLatitude();
                             double lon=location.getLongitude();
                             mapboxMap.animateCamera(newCameraPosition(
@@ -153,28 +148,25 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                 });
     }
 
-                    //SETTO LA POSIZIONE DELLA CAMERA
+        //SETTO LA POSIZIONE DELLA CAMERA
     public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
         if(find){
             CameraPosition position = new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
-                    .zoom(11)
+                    .zoom(14)
                     .tilt(50)
-                    .bearing(0)
                     .build();
             return position;
         } else {
             CameraPosition position = new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
-                    .zoom(12)
-                    .tilt(0)
-                    .bearing(0)
+                    .zoom(11)
                     .build();
             return position;
         }
     }
 
-                    //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
+        //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
     public void richiestaMappa(){
         //CHIEDO AL SERVER QUALI SONO GLI OGGETTI PRESENTI NELLA MAPPA E LI SALVO
         myRequestQueue= Volley.newRequestQueue(this);
@@ -186,7 +178,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             String ses_ID = sharedPref.getString(getString(R.string.preference_file_session_id), "");
             //metto il valore della session_id nella stringa della richiesta
             jsonBody.put("session_id", ses_ID);
-            Log.d("Play","Ottimo, ho aggiunto l'id alla chiamata:"+ses_ID);
         } catch (JSONException e) {
             e.printStackTrace();
             Log.d("Play","Male, NON sono riuscito ad aggiungere l'id alla chiamata.");
@@ -212,7 +203,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         myRequestQueue.add(getMap_Request);
     }
 
-                    //POSIZIONO LE ICONE SULLA MAPPA
+        //POSIZIONO LE ICONE SULLA MAPPA
     public void mettiIcone(Style style){
 
         List<Feature> symbolLayerMonsterFeatureList = new ArrayList<>();
@@ -268,7 +259,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         richiestaMappa();
     }
 
-    //IMPOSTO LE ICONE SULLA MAPPA
+        //IMPOSTO LE ICONE SULLA MAPPA
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap=mapboxMap;
@@ -276,8 +267,16 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                     @Override
                     public void onStyleLoaded(@NonNull Style style) {
 
-                            //VADO A POSIZIONARMI SULLA MAPPA
-                            doveSono();
+                            //INSERISCO I DATI DI XP E LP
+                            infoUtente();
+
+                            primaVolta++;
+                            Log.d("Play", "Il valore di primaVolta è: "+primaVolta);
+                                //VADO A POSIZIONARMI SULLA MAPPA
+                            if(primaVolta==0){
+                                Log.d("Play", "Sono entrato nell'IF");
+                                doveSono();
+                            }
 
                             //POSIZIONO LE ICONE SULLA MAPPA
                             mettiIcone(style);
@@ -298,8 +297,45 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         });
     }
 
-                    //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
-    @SuppressWarnings( {"MissingPermission"})
+        //PRENDO LP E XP DA METTERE NELLA SCHERMATA PLAY
+    public void infoUtente(){
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+        JSONObject jsonBody = new JSONObject();
+            try {
+                jsonBody.put("session_id", sessionId);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JsonObjectRequest getProfile_Request = new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
+                jsonBody,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        TextView tvxp=findViewById(R.id.textView7);
+                        TextView tvlp=findViewById(R.id.textView8);
+                        User u= new User(response);
+                        ImageView profileImage= findViewById(R.id.playButton);
+                        tvxp.setText("  XP: "+Integer.toString(u.getXP())+"  ");
+                        tvlp.setText("  LP: "+Integer.toString(u.getLP())+"  ");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+        );
+        requestQueue.add(getProfile_Request);
+    }
+
+        //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
+        @SuppressWarnings( {"MissingPermission"})
     private void enableLocationComponent(@NonNull Style loadedMapStyle) {
 
                     // Create and customize the LocationComponent's options
@@ -337,11 +373,13 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                     // Add the camera tracking listener. Fires if the map camera is manually moved.
                 locationComponent.addOnCameraTrackingChangedListener(this);
 
-                findViewById(R.id.buttonYou).setOnClickListener (new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                            locationComponent.zoomWhileTracking(17);
-                            locationComponent.setCameraMode(CameraMode.TRACKING);
+                Button you = findViewById(R.id.buttonYou);
+
+                you.setOnClickListener (new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                doveSono();
+                                locationComponent.setCameraMode(CameraMode.TRACKING);
                     }
                 });
     }
@@ -352,7 +390,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         mapView.onSaveInstanceState(outState);
     }
 
-    /*protected void createLocationRequest() {
+        /*protected void createLocationRequest() {
         //LocationRequest locationRequest = LocationRequest.create();
         //locationRequest.setInterval(10000);
         //locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
@@ -511,7 +549,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         myRequestQueue.add(getImage_Request);
     }
 
-    //PROVA A DIVIDERE I DUE PROCESSI...
+        //PROVA A DIVIDERE I DUE PROCESSI...
     public void mostraOggetto(int nOggetto, int posizione){
         ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
         Oggetto obj=objs.get(posizione);

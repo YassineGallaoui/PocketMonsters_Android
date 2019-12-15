@@ -33,7 +33,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Life"
+            android:text="Result"
             android:textAlignment="center"
             android:textSize="14sp"
             android:textStyle="bold" />
@@ -112,12 +112,15 @@
 
     <Button
         android:id="@+id/button7"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="OK !"
+        android:background="@drawable/bottone_primario"
+        android:padding="10dp"
+        android:text=" OK ! "
         android:textAlignment="center"
         android:textSize="18sp"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"

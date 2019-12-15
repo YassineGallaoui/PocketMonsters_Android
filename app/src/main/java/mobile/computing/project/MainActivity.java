@@ -2,12 +2,18 @@ package mobile.computing.project;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -30,7 +36,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button profilo=findViewById(R.id.button2);
+        Button profilo=findViewById(R.id.profileButton);
         profilo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -39,12 +45,23 @@ public class MainActivity extends Activity {
             }
         });
 
-        Button gioca=findViewById(R.id.profileImage);
+        Button gioca=findViewById(R.id.playButton);
         gioca.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent vaiAlGioco=new Intent(getApplicationContext(), Play.class);
-                startActivity(vaiAlGioco);
+
+                //CONTROLLO SE INTERNET È ACCESO
+                ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+                if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                        connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+                    //SIAMO CONNESSI A UNA QUALCHE RETE
+                    Intent vaiAlGioco=new Intent(getApplicationContext(), Play.class);
+                    startActivity(vaiAlGioco);
+                }
+                else{
+                    //NON SIAMO CONNESSI A NESSUNA RETE
+                    Toast.makeText(getApplicationContext(), "È necessaria una connessione a Internet attiva", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }

@@ -34,7 +34,9 @@ public class infoRisultato extends Activity {
         Bitmap decodedImg = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         im1.setImageBitmap(decodedImg);
         TextView tv1=findViewById(R.id.textView2);
-        tv1.setText(extras.getString("life"));
+        if((extras.getString("life")).equals("false"))
+            tv1.setText("Win !");
+        else tv1.setText("Defeated !");
         TextView tv2=findViewById(R.id.textView4);
         tv2.setText(extras.getString("lp"));
         TextView tv3=findViewById(R.id.textView6);

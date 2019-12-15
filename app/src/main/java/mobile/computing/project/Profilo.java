@@ -101,7 +101,7 @@ public class Profilo extends Activity {
         TextView profileLP= findViewById(R.id.profileLP);
         TextView username= findViewById(R.id.username);
         User u= new User(response);
-        ImageView profileImage= findViewById(R.id.profileImage);
+        ImageView profileImage= findViewById(R.id.playButton);
         // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
         if (u.getImage()!= null) {
             String imgBase64 = u.getImage();
@@ -135,8 +135,7 @@ public class Profilo extends Activity {
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 Log.d("immagine", String.valueOf(bitmap));
-
-                ImageView imageView =findViewById(R.id.profileImage);
+                ImageView imageView =findViewById(R.id.playButton);
                 imageView.setImageBitmap(bitmap);
                 imgBase64= bitmapToBase64(bitmap);
                 Log.d("base64",bitmapToBase64(bitmap));
@@ -176,12 +175,14 @@ public class Profilo extends Activity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("SetProfile", "Andato a buon fine");
+                        Toast.makeText(getApplicationContext(), "Data successfully saved : )", Toast.LENGTH_SHORT).show();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("SetProfile", "Andata male");
+                        Toast.makeText(getApplicationContext(), "Something went wrong : (", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
