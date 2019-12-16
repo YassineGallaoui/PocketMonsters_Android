@@ -101,9 +101,9 @@ public class Profilo extends Activity {
         TextView profileLP= findViewById(R.id.profileLP);
         TextView username= findViewById(R.id.username);
         User u= new User(response);
-        ImageView profileImage= findViewById(R.id.playButton);
+        ImageView profileImage= findViewById(R.id.userImage);
         // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
-        if (u.getImage()!= null) {
+        if (!(u.getImage().equals("null"))) {
             String imgBase64 = u.getImage();
             Bitmap img = base64ToBitmap(imgBase64);
             profileImage.setImageBitmap(img);
@@ -135,7 +135,7 @@ public class Profilo extends Activity {
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
                 Log.d("immagine", String.valueOf(bitmap));
-                ImageView imageView =findViewById(R.id.playButton);
+                ImageView imageView =findViewById(R.id.userImage);
                 imageView.setImageBitmap(bitmap);
                 imgBase64= bitmapToBase64(bitmap);
                 Log.d("base64",bitmapToBase64(bitmap));
@@ -144,10 +144,12 @@ public class Profilo extends Activity {
                 e.printStackTrace();
             }
         }
+        Log.d("profilo", "sono entrato in onActivityrESULT");
     }
 
 
     public void saveChanges(View v){
+        Log.d("profilo", "sono entrato in SaveChanges");
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
