@@ -15,6 +15,7 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +34,9 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
@@ -83,6 +86,9 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     private MapboxMap mapboxMap;
     private FusedLocationProviderClient fusedLocationClient;
     private LocationComponent locationComponent;
+    private LocationCallback locationCallback;
+    private boolean requestingLocationUpdates=true;
+
     private boolean isInTrackingMode;
     int primaVolta=-1;
     public RequestQueue myRequestQueue = null;
@@ -112,6 +118,19 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                 startActivity(vaiIndietro);
             }
         });
+
+        locationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
+                if (locationResult == null) {
+                    return;
+                }
+                for (Location location : locationResult.getLocations()) {
+                    Log.d("Play","OK, POSIZIONE CAMBIATA: "+location.toString());
+                }
+            }
+        };
+
     }
 
     @Override
@@ -119,6 +138,11 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         super.onResume();
         mapView.onResume();
         richiestaMappa();
+        if (requestingLocationUpdates) {
+            Log.d("Play","Ora chiamo un update della posizione");
+            startLocationUpdates();
+            Log.d("Play","Chiamata effettuata");
+        }
     }
 
     //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
@@ -425,6 +449,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
             return;
         }
+
         if(nOggetto!=-1 || objs.get(posizione).getId()==nOggetto) { //Se trovo un oggetto con quell'ID
             //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
             richiediImgOggetto(nOggetto, posizione);
@@ -471,10 +496,9 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         mapView.onSaveInstanceState(outState);
     }
 
-    /*protected void createLocationRequest() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(10000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        /*
+    protected void createLocationRequest() {
+
 
         //ATTENZIONE !!!!!!!!!!!  FORSE QUESTA PARTE NON SERVE NEMMENO
 
@@ -484,7 +508,8 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         SettingsClient client = LocationServices.getSettingsClient(this);
         Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
 
-        //SETTAGGI DEL DEVICE OTTIMI
+        //!!!  LA SEGUENTE PARTE NON SO SE È DA FARE  !!!
+        //I SETTAGGI DEL DEVICE VANNO BENE
         task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
             @Override
             public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
@@ -494,7 +519,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             }
         });
 
-        //SETTAGGI DEL DEVICE NON OTTIMI
+        //I SETTAGGI DEL DEVICE NON VANNO BENE
         task.addOnFailureListener(this, new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
@@ -512,10 +537,18 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                 }
             }
         });
+    }
+     */
 
+    private void startLocationUpdates() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(2000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
-
-    }*/ //È DA FARE?
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
 
     //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
     public void richiediImgOggetto(final int numeroOggetto, final int posizione){
