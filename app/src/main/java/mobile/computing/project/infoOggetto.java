@@ -34,6 +34,7 @@ public class infoOggetto extends Activity {
     public static final String FIGHT_EAT="fighteat.php";
     public RequestQueue myRequestQueue = null;
     String id;
+    String tipo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +56,7 @@ public class infoOggetto extends Activity {
         Bitmap decodedImg = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
 
         String nome= extras.getString("nome");
-        String tipo= extras.getString("tipo");
+        tipo= extras.getString("tipo");
         String size= extras.getString("size");
         String latitudine= extras.getString("lat");
         String longitudine= extras.getString("lon");
@@ -117,15 +118,12 @@ public class infoOggetto extends Activity {
                                     Log.d("infoOggetto","RISULTATI: "+response.getString("died")
                                             +", "+response.getString("lp")+", "+response.getString("xp"));
 
-                            String life=response.getString("died");
-                            String lp=response.getString("lp");
-                            String xp=response.getString("xp");
-                            Log.d("infoOggetto","Ho preso il risultato dello scontro: "+life+", "+lp+", "+xp);
                             Intent getResults=new Intent(infoOggetto.this, infoRisultato.class);
                             getResults.putExtra("img", imgBase64);
-                            getResults.putExtra("life", life);
-                            getResults.putExtra("lp",lp);
-                            getResults.putExtra("xp",xp);
+                            getResults.putExtra("life", response.getString("died"));
+                            getResults.putExtra("type", tipo);
+                            getResults.putExtra("lp",response.getString("lp"));
+                            getResults.putExtra("xp",response.getString("xp"));
                             startActivity(getResults);
                             finish();
                                 } catch (JSONException e) {

@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
@@ -30,9 +31,16 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -87,7 +95,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
 
-
         //CHIEDO I PERMESSI PER USARE LA POSIZIONE
         if(ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED){
@@ -107,66 +114,14 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         });
     }
 
-    //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case 0: {
-                if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
-                    Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
-                    Intent tornaIndietro=new Intent(getApplicationContext(), MainActivity.class);
-                    startActivity(tornaIndietro);
-                }
-            }
-        }
+    public void onResume(){
+        super.onResume();
+        mapView.onResume();
+        richiestaMappa();
     }
 
-        //TROVO POSIZIONE ATTUALE USER
-    public void doveSono(){
-        //PRENDO L'ULTIMA POSIZIONE NOTA E MI POSIZIONO LÌ
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(Play.this);
-        fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(Play.this, new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        ultimaPosizione=location;
-                        if (location != null) {   //IN REALTÀ CI VANNO I LOCATION.GET()
-                            Log.d("Play", "Ultima posizione rilevata");
-                            double lat=location.getLatitude();
-                            double lon=location.getLongitude();
-                            mapboxMap.animateCamera(newCameraPosition(
-                                    impostaPosizione(lat,lon,true)), 2000);
-                        } else {Log.d("Play","Nessuna posizione rilevata!");
-                            mapboxMap.animateCamera(newCameraPosition(impostaPosizione
-                                            (45.464188, 9.190639, false)),
-                                    2000);
-                            Toast.makeText(getApplicationContext(), "Nessuna posizione rilevata, assicurarsi" +
-                                    " di aver attivato il GPS.", Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
-    }
-
-        //SETTO LA POSIZIONE DELLA CAMERA
-    public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
-        if(find){
-            CameraPosition position = new CameraPosition.Builder()
-                    .target(new LatLng(lat, lon))
-                    .zoom(14)
-                    .tilt(50)
-                    .build();
-            return position;
-        } else {
-            CameraPosition position = new CameraPosition.Builder()
-                    .target(new LatLng(lat, lon))
-                    .zoom(11)
-                    .build();
-            return position;
-        }
-    }
-
-        //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
+    //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
     public void richiestaMappa(){
         //CHIEDO AL SERVER QUALI SONO GLI OGGETTI PRESENTI NELLA MAPPA E LI SALVO
         myRequestQueue= Volley.newRequestQueue(this);
@@ -192,6 +147,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                         OggettiMappa.getInstance().populate(response);
                         Log.d("Play", "Ho chiesto la mappa");
                         mapView.getMapAsync(Play.this);
+                        Log.d("Play", "Ho richiamato il metodo on MapReady");
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -203,7 +159,113 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         myRequestQueue.add(getMap_Request);
     }
 
-        //POSIZIONO LE ICONE SULLA MAPPA
+    //IMPOSTO LE ICONE SULLA MAPPA
+    @Override
+    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
+        this.mapboxMap=mapboxMap;
+        Log.d("Play", "È stato  richiamato il metodo onMapReady");
+        mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+
+                        //INSERISCO I DATI DI XP E LP
+                        infoUtente();
+
+                        primaVolta++;
+                        Log.d("Play", "Il valore di primaVolta è: "+primaVolta);
+                        //VADO A POSIZIONARMI SULLA MAPPA
+                        if(primaVolta==0){
+                            Log.d("Play", "Sono entrato nell'IF");
+                            doveSono();
+                        }
+
+                        //POSIZIONO LE ICONE SULLA MAPPA
+                        mettiIcone(style);
+
+                        //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
+                        if(primaVolta==0){
+                            Log.d("Play", "Sono entrato nell'IF");
+                            enableLocationComponent(style);
+                        }
+
+                    }
+                }
+        );
+
+        mapboxMap.addOnMapClickListener(    new MapboxMap.OnMapClickListener() {
+            @Override
+            public boolean onMapClick(@NonNull LatLng point) {
+                clickIcona(point);
+                return true;
+            }
+        });
+    }
+
+    //PRENDO LP E XP DA METTERE NELLA SCHERMATA PLAY
+    public void infoUtente(){
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("session_id", sessionId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        JsonObjectRequest getProfile_Request = new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
+                jsonBody,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        TextView tvxp=findViewById(R.id.textView7);
+                        TextView tvlp=findViewById(R.id.textView8);
+                        User u= new User(response);
+                        ImageView profileImage= findViewById(R.id.playButton);
+                        tvxp.setText("  XP: "+u.getXP()+"  ");
+                        tvlp.setText("  LP: "+u.getLP()+"  ");
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+                }
+        );
+        requestQueue.add(getProfile_Request);
+    }
+
+    //TROVO E IMPOSTO POSIZIONE ATTUALE USER
+    public void doveSono(){
+        //PRENDO L'ULTIMA POSIZIONE NOTA E MI POSIZIONO LÌ
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(Play.this);
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(Play.this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        ultimaPosizione=location;
+                        if (location != null) {
+                            Log.d("Play", "Ultima posizione rilevata");
+                            double lat=location.getLatitude();
+                            double lon=location.getLongitude();
+                            mapboxMap.animateCamera(newCameraPosition(
+                                    impostaPosizione(lat,lon,true)), 2000);//true vuole dire che la posizione che setto è quella dell'utente, quindi le impostazioni della camera saranno diverse
+                        } else {Log.d("Play","Nessuna posizione rilevata!");
+                            mapboxMap.animateCamera(newCameraPosition(impostaPosizione
+                                            (45.464188, 9.190639, false)), //false vuole dire che la posizione che setto non è quella dell'utente, quindi le impostazioni della camera saranno diverse
+                                    2000);
+                            Toast.makeText(getApplicationContext(), "Nessuna posizione rilevata, assicurarsi" +
+                                    " di aver attivato il GPS.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    //POSIZIONO LE ICONE SULLA MAPPA
     public void mettiIcone(Style style){
 
         List<Feature> symbolLayerMonsterFeatureList = new ArrayList<>();
@@ -252,136 +314,155 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                         iconOffset(new Float[]{0f, -9f})));
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        mapView.onResume();
-        richiestaMappa();
-    }
+    //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
+    @SuppressWarnings( {"MissingPermission"})
+    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
 
-        //IMPOSTO LE ICONE SULLA MAPPA
-    @Override
-    public void onMapReady(@NonNull final MapboxMap mapboxMap) {
-        this.mapboxMap=mapboxMap;
-        mapboxMap.setStyle(Style.MAPBOX_STREETS, new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
+        // Create and customize the LocationComponent's options
+        LocationComponentOptions customLocationComponentOptions = LocationComponentOptions.builder(this)
+                .layerBelow(LAYER_MOSTRI)
+                .bearingTintColor(Color.CYAN)
+                .accuracyAlpha(.3f)
+                .accuracyColor(Color.CYAN)
+                .build();
 
-                            //INSERISCO I DATI DI XP E LP
-                            infoUtente();
+        // Get an instance of the component
+        locationComponent = mapboxMap.getLocationComponent();
 
-                            primaVolta++;
-                            Log.d("Play", "Il valore di primaVolta è: "+primaVolta);
-                                //VADO A POSIZIONARMI SULLA MAPPA
-                            if(primaVolta==0){
-                                Log.d("Play", "Sono entrato nell'IF");
-                                doveSono();
-                            }
+        LocationComponentActivationOptions locationComponentActivationOptions =
+                LocationComponentActivationOptions.builder(this, loadedMapStyle)
+                        .locationComponentOptions(customLocationComponentOptions)
+                        .useDefaultLocationEngine(true)
+                        .build();
 
-                            //POSIZIONO LE ICONE SULLA MAPPA
-                            mettiIcone(style);
+        // Activate with options
+        locationComponent.activateLocationComponent(locationComponentActivationOptions);
 
-                            //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
-                            enableLocationComponent(style);
+        // Enable to make component visible
+        locationComponent.setLocationComponentEnabled(true);
 
-                    }
-                }
-        );
+        // Set the component's camera mode
+        locationComponent.setCameraMode(CameraMode.TRACKING_COMPASS);
 
-        mapboxMap.addOnMapClickListener(    new MapboxMap.OnMapClickListener() {
+        // Set the component's render mode
+        locationComponent.setRenderMode(RenderMode.COMPASS);
+
+        // Add the location icon click listener
+        locationComponent.addOnLocationClickListener(this);
+
+        // Add the camera tracking listener. Fires if the map camera is manually moved.
+        locationComponent.addOnCameraTrackingChangedListener(this);
+
+        Button you = findViewById(R.id.buttonYou);
+
+        you.setOnClickListener (new View.OnClickListener() {
             @Override
-            public boolean onMapClick(@NonNull LatLng point) {
-                clickIcona(point);
-                return false;
+            public void onClick(View view) {
+                doveSono();
+                locationComponent.setCameraMode(CameraMode.TRACKING);
             }
         });
     }
 
-        //PRENDO LP E XP DA METTERE NELLA SCHERMATA PLAY
-    public void infoUtente(){
-        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-        JSONObject jsonBody = new JSONObject();
-            try {
-                jsonBody.put("session_id", sessionId);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+    //QUANDO CLICCO SU UNA ICONA
+    public void clickIcona(@NonNull LatLng point) {
 
-        RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JsonObjectRequest getProfile_Request = new JsonObjectRequest("https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
-                jsonBody,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        TextView tvxp=findViewById(R.id.textView7);
-                        TextView tvlp=findViewById(R.id.textView8);
-                        User u= new User(response);
-                        ImageView profileImage= findViewById(R.id.playButton);
-                        tvxp.setText("  XP: "+Integer.toString(u.getXP())+"  ");
-                        tvlp.setText("  LP: "+Integer.toString(u.getLP())+"  ");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
-                }
-        );
-        requestQueue.add(getProfile_Request);
+        PointF screenPoint = mapboxMap.getProjection().toScreenLocation(point);
+        List<Feature> featuresMostri = mapboxMap.queryRenderedFeatures(screenPoint, LAYER_MOSTRI);
+        List<Feature> featuresCandy = mapboxMap.queryRenderedFeatures(screenPoint, LAYER_CARAMELLE);
+
+        double latm=-1;
+        double lonm=-1;
+        double latc=-1;
+        double lonc=-1;
+
+        if (!featuresMostri.isEmpty() && featuresCandy.isEmpty()) {
+            Feature selectedFeature = featuresMostri.get(0);
+            Point position = (Point) selectedFeature.geometry();
+            latm = position.latitude();
+            lonm = position.longitude();
+        }
+        if (!featuresCandy.isEmpty() && featuresMostri.isEmpty()) {
+            Feature selectedFeature = featuresCandy.get(0);
+            Point position = (Point) selectedFeature.geometry();
+            latc = position.latitude();
+            lonc = position.longitude();
+        }
+        if (!featuresCandy.isEmpty() && !featuresMostri.isEmpty()) {
+            Feature selectedFeature = featuresCandy.get(0);
+            Point position1 = (Point) selectedFeature.geometry();
+            Feature selectedFeature2 = featuresCandy.get(0);
+            Point position2 = (Point) selectedFeature2.geometry();
+            latm = position1.latitude();
+            lonm = position1.longitude();
+            latc = position2.latitude();
+            lonc = position2.longitude();
+        }
+        if (featuresCandy.isEmpty() && featuresMostri.isEmpty())    return;
+
+        //prendo gli oggetti che ci sono sulla mappa
+        ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
+
+        //cerco l'id dell'oggetto cliccato perchè serve per la chiamata
+        int nOggetto=-1;
+        int posizione=-1;
+        double temp = Math.pow(10, 4);
+        latm=Math.round(latm * temp) / temp;
+        lonm=Math.round(lonm * temp) / temp;
+        latc=Math.round(latc * temp) / temp;
+        lonc=Math.round(lonc * temp) / temp;
+        for(int i=0; i<objs.size(); i++){
+            Oggetto obj=objs.get(i);
+            if((obj.getLat()==latm && obj.getLon()==lonm)||(obj.getLat()==latc && obj.getLon()==lonc)){
+                nOggetto=obj.getId();
+                posizione=i;
+                break;
+            }
+        }
+
+        //Se NON trovo nessun oggetto con quell'ID
+        if(nOggetto==-1 || objs.get(posizione).getId()!=nOggetto) {
+            Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if(nOggetto!=-1 || objs.get(posizione).getId()==nOggetto) { //Se trovo un oggetto con quell'ID
+            //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
+            richiediImgOggetto(nOggetto, posizione);
+            return;
+        }
+
     }
 
-        //METTO L'ICONA DELLA POSIZIONE ATTUALE DELL'UTENTE
-        @SuppressWarnings( {"MissingPermission"})
-    private void enableLocationComponent(@NonNull Style loadedMapStyle) {
+    //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case 0: {
+                if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
+                    Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
+                    Intent tornaIndietro=new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(tornaIndietro);
+                }
+            }
+        }
+    }
 
-                    // Create and customize the LocationComponent's options
-                LocationComponentOptions customLocationComponentOptions = LocationComponentOptions.builder(this)
-                    .layerBelow(LAYER_MOSTRI)
-                    .bearingTintColor(Color.CYAN)
-                    .accuracyAlpha(.3f)
-                    .accuracyColor(Color.CYAN)
+    //SETTO LA POSIZIONE DELLA CAMERA
+    public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
+        if(find){
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(new LatLng(lat, lon))
+                    .zoom(14)
+                    .tilt(50)
                     .build();
-
-                    // Get an instance of the component
-                locationComponent = mapboxMap.getLocationComponent();
-
-                LocationComponentActivationOptions locationComponentActivationOptions =
-                        LocationComponentActivationOptions.builder(this, loadedMapStyle)
-                                .locationComponentOptions(customLocationComponentOptions)
-                                .useDefaultLocationEngine(true)
-                                .build();
-
-                    // Activate with options
-                locationComponent.activateLocationComponent(locationComponentActivationOptions);
-
-                    // Enable to make component visible
-                locationComponent.setLocationComponentEnabled(true);
-
-                    // Set the component's camera mode
-                locationComponent.setCameraMode(CameraMode.TRACKING_COMPASS);
-
-                    // Set the component's render mode
-                locationComponent.setRenderMode(RenderMode.COMPASS);
-
-                    // Add the location icon click listener
-                locationComponent.addOnLocationClickListener(this);
-
-                    // Add the camera tracking listener. Fires if the map camera is manually moved.
-                locationComponent.addOnCameraTrackingChangedListener(this);
-
-                Button you = findViewById(R.id.buttonYou);
-
-                you.setOnClickListener (new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                doveSono();
-                                locationComponent.setCameraMode(CameraMode.TRACKING);
-                    }
-                });
+            return position;
+        } else {
+            CameraPosition position = new CameraPosition.Builder()
+                    .target(new LatLng(lat, lon))
+                    .zoom(11)
+                    .build();
+            return position;
+        }
     }
 
     @Override
@@ -390,10 +471,10 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         mapView.onSaveInstanceState(outState);
     }
 
-        /*protected void createLocationRequest() {
-        //LocationRequest locationRequest = LocationRequest.create();
-        //locationRequest.setInterval(10000);
-        //locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+    /*protected void createLocationRequest() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(10000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         //ATTENZIONE !!!!!!!!!!!  FORSE QUESTA PARTE NON SERVE NEMMENO
 
@@ -436,79 +517,8 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
 
     }*/ //È DA FARE?
 
-
-        //QUANDO CLICCO SU UNA ICONA
-    public void clickIcona(@NonNull LatLng point) {
-
-        PointF screenPoint = mapboxMap.getProjection().toScreenLocation(point);
-        List<Feature> featuresMostri = mapboxMap.queryRenderedFeatures(screenPoint, LAYER_MOSTRI);
-        List<Feature> featuresCandy = mapboxMap.queryRenderedFeatures(screenPoint, LAYER_CARAMELLE);
-
-        double latm=-1;
-        double lonm=-1;
-        double latc=-1;
-        double lonc=-1;
-
-        if (!featuresMostri.isEmpty() && featuresCandy.isEmpty()) {
-            Feature selectedFeature = featuresMostri.get(0);
-            Point position = (Point) selectedFeature.geometry();
-            latm = position.latitude();
-            lonm = position.longitude();
-        }
-        if (!featuresCandy.isEmpty() && featuresMostri.isEmpty()) {
-            Feature selectedFeature = featuresCandy.get(0);
-            Point position = (Point) selectedFeature.geometry();
-            latc = position.latitude();
-            lonc = position.longitude();
-        }
-        if (!featuresCandy.isEmpty() && !featuresMostri.isEmpty()) {
-            Feature selectedFeature = featuresCandy.get(0);
-            Point position1 = (Point) selectedFeature.geometry();
-            Feature selectedFeature2 = featuresCandy.get(0);
-            Point position2 = (Point) selectedFeature2.geometry();
-            latm = position1.latitude();
-            lonm = position1.longitude();
-            latc = position2.latitude();
-            lonc = position2.longitude();
-        }
-        if (featuresCandy.isEmpty() && featuresMostri.isEmpty())
-            return;
-
-        //prendo gli oggetti che ci sono sulla mappa
-        ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
-
-        //cerco l'id dell'oggetto cliccato perchè serve per la chiamata
-        int nOggetto=-1;
-        int posizione=-1;
-        double temp = Math.pow(10, 4);
-        latm=Math.round(latm * temp) / temp;
-        lonm=Math.round(lonm * temp) / temp;
-        latc=Math.round(latc * temp) / temp;
-        lonc=Math.round(lonc * temp) / temp;
-        for(int i=0; i<objs.size(); i++){
-            Oggetto obj=objs.get(i);
-            if((obj.getLat()==latm && obj.getLon()==lonm)||(obj.getLat()==latc && obj.getLon()==lonc)){
-                nOggetto=obj.getId();
-                posizione=i;
-                break;
-            }
-        }
-
-            //Se NON trovo nessun oggetto con quell'ID
-        if(nOggetto==-1 || objs.get(posizione).getId()!=nOggetto) {
-            Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if(nOggetto!=-1 || objs.get(posizione).getId()==nOggetto) { //Se trovo un oggetto con quell'ID
-            //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
-            richiediInfoOggetto(nOggetto, posizione);
-            return;
-        }
-
-    }
-
-        //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
-    public void richiediInfoOggetto(final int numeroOggetto, final int posizione){
+    //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
+    public void richiediImgOggetto(final int numeroOggetto, final int posizione){
         //prendo il mio session id perchè serve per la chiamata
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
@@ -520,9 +530,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         try {
             //metto il valore della session_id e del target_id nella stringa della richiesta
             jsonBody.put("session_id", sessionId+"");
-            Log.d("Play" ,"Il session id che ho messo è: "+sessionId);
             jsonBody.put("target_id", numeroOggetto+"");
-            Log.d("Play" ,"Il target id che ho messo è: "+numeroOggetto);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -549,11 +557,11 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         myRequestQueue.add(getImage_Request);
     }
 
-        //PROVA A DIVIDERE I DUE PROCESSI...
-    public void mostraOggetto(int nOggetto, int posizione){
+    //MOSTRA LA SCHERMATA DELLE INFORMAZIONI DEL MOSTRO
+    public void mostraOggetto(int nOggetto, int posizione) {
         ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
         Oggetto obj=objs.get(posizione);
-        Intent apriInfo=new Intent(this, infoOggetto.class);
+        Intent apriInfo=new Intent(Play.this, infoOggetto.class);
 
         apriInfo.putExtra("id", nOggetto+"");
         apriInfo.putExtra("tipo", obj.getType());
