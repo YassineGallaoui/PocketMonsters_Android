@@ -50,7 +50,7 @@
         app:layout_constraintBottom_toTopOf="@+id/username"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/playButton" />
+        app:layout_constraintTop_toBottomOf="@+id/userImage" />
 
     <EditText
         android:id="@+id/username"
@@ -73,15 +73,15 @@
         app:layout_constraintTop_toBottomOf="@+id/profileXP" />
 
     <ImageView
-        android:id="@+id/playButton"
+        android:id="@+id/userImage"
         android:layout_width="150dp"
         android:layout_height="150dp"
         android:backgroundTint="#CE00CCFF"
         android:src="@mipmap/user"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/changeImage"
-        app:layout_constraintEnd_toStartOf="@+id/button4"
-        app:layout_constraintStart_toEndOf="@+id/button3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:src="@mipmap/user" />
 

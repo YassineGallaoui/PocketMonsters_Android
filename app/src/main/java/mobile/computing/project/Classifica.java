@@ -29,6 +29,13 @@ public class Classifica extends Activity {
     protected void onCreate(Bundle savedIstanceState){
         super.onCreate(savedIstanceState);
         setContentView(R.layout.activity_classifica);
+
+
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
         RecyclerView list=findViewById(R.id.list);
         list.setLayoutManager(new LinearLayoutManager(this));
         final UserAdapter userAdapter= new UserAdapter(this, this, UserModel.getInstance().getRanking());
@@ -68,11 +75,6 @@ public class Classifica extends Activity {
         );
 
         rankRequesteQueue.add(getRankingRequest);
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
 
 
 
