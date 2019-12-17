@@ -60,7 +60,7 @@ public class infoOggetto extends Activity {
         Double latitudine= Double.valueOf(extras.getString("lat"));
         Double longitudine= Double.valueOf(extras.getString("lon"));
         com.mapbox.geojson.Point posO= com.mapbox.geojson.Point.fromLngLat(longitudine, latitudine);
-        Double latU= Double.valueOf(extras.getString("lonU"));
+        Double latU= Double.valueOf(extras.getString("latU"));
         Double lonU= Double.valueOf(extras.getString("lonU"));
         com.mapbox.geojson.Point posU = com.mapbox.geojson.Point.fromLngLat(lonU, latU);
 
@@ -91,7 +91,7 @@ public class infoOggetto extends Activity {
             azione.setText("Fight");
         } else azione.setText("Eat");
 
-        Log.d("infoOggetto","");
+        Log.d("infoOggetto","posizione del ");
         Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));
             //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
         if(TurfMeasurement.distance( posO, posU)<0.05){
