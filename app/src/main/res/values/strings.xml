@@ -1,10 +1,11 @@
 <resources>
     <string name="app_name">Mostri da tasca</string>
     <string name="play">Play</string>
-    <string name="profile">Profile</string>
     <string name="username">Username</string>
     <string name="preference_file_session_id" />
-    <string name="preference_img_code" />
-    <string name="preference_img" />
-
+    <string name="indietro">Indietro</string>
+    <string name="fine">Fine</string>
+    <string name="cambia_immagine">Cambia immagine</string>
+    <string name="imgProfilo">Immagine di profilo dell\'utente</string>
+    <string name="classifica"> Classifica </string>
 </resources>

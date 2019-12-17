@@ -14,6 +14,7 @@ public class UserAdapter extends RecyclerView.Adapter<ListElement> {
     private LayoutInflater inflater;
     private Activity parentActivity;
     private ArrayList<User> usersTop20;
+    int pos=0;
 
     public UserAdapter(Context context, Activity parentActivity, ArrayList<User> usersTop20){
         this.inflater= LayoutInflater.from(context);
@@ -30,7 +31,8 @@ public class UserAdapter extends RecyclerView.Adapter<ListElement> {
     @Override
     public void onBindViewHolder(ListElement holder, int position){
         User user=usersTop20.get(position);
-        holder.setUser(user);
+        pos++;
+        holder.setUser(user, pos);
 
     }
 

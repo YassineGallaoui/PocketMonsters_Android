@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -28,13 +29,20 @@ public class infoRisultato extends Activity {
 
         getWindow().setLayout((int)(width*.9), (int)(height*.8));
 
+        Log.d("infoRisultato","Sono entrato nella vuova activity");
         Bundle extras = getIntent().getExtras();
         ImageView im1=findViewById(R.id.imageView);
         byte[] decodedString = Base64.decode(extras.getString("img"), Base64.DEFAULT);
         Bitmap decodedImg = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
         im1.setImageBitmap(decodedImg);
         TextView tv1=findViewById(R.id.textView2);
-        tv1.setText(extras.getString("life"));
+        if((extras.getString("life")).equals("false")){
+            if((extras.getString("type")).equals("MO"))
+                tv1.setText("You Win !");
+            else tv1.setText("Healed !");
+        } else {
+                tv1.setText("Defeated !");
+        }
         TextView tv2=findViewById(R.id.textView4);
         tv2.setText(extras.getString("lp"));
         TextView tv3=findViewById(R.id.textView6);

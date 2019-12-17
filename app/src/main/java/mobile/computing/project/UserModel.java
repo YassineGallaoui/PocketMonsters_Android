@@ -21,10 +21,12 @@ public class UserModel {
     public void uploadRanking(JSONObject response){
         try{
             JSONArray rankingJSON= response.getJSONArray("ranking");
+            usersTop20.clear();
             for (int i=0; i<rankingJSON.length(); i++){
                 JSONObject userJSON= rankingJSON.getJSONObject(i);
                 User user= new User(userJSON);
                 usersTop20.add(user);
+
             }
         }catch (JSONException e){
             e.printStackTrace();
