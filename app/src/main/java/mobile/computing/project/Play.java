@@ -3,47 +3,35 @@ package mobile.computing.project;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.android.gms.common.api.ResolvableApiException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationSettingsRequest;
-import com.google.android.gms.location.LocationSettingsResponse;
-import com.google.android.gms.location.SettingsClient;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -65,10 +53,13 @@ import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import static com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
@@ -119,7 +110,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             }
         });
 
-        locationCallback = new LocationCallback() {
+        /*locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
@@ -129,7 +120,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                     Log.d("Play","OK, POSIZIONE CAMBIATA: "+location.toString());
                 }
             }
-        };
+        };*/
 
     }
 
@@ -138,11 +129,11 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         super.onResume();
         mapView.onResume();
         richiestaMappa();
-        if (requestingLocationUpdates) {
+        /*if (requestingLocationUpdates) {
             Log.d("Play","Ora chiamo un update della posizione");
             startLocationUpdates();
             Log.d("Play","Chiamata effettuata");
-        }
+        }*/
     }
 
     //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
@@ -246,7 +237,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                         TextView tvxp=findViewById(R.id.textView7);
                         TextView tvlp=findViewById(R.id.textView8);
                         User u= new User(response);
-                        ImageView profileImage= findViewById(R.id.playButton);
+                        ImageView profileImage= findViewById(R.id.userImage);
                         tvxp.setText("  XP: "+u.getXP()+"  ");
                         tvlp.setText("  LP: "+u.getLP()+"  ");
                     }
@@ -403,12 +394,14 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         if (!featuresMostri.isEmpty() && featuresCandy.isEmpty()) {
             Feature selectedFeature = featuresMostri.get(0);
             Point position = (Point) selectedFeature.geometry();
+            assert position != null;
             latm = position.latitude();
             lonm = position.longitude();
         }
         if (!featuresCandy.isEmpty() && featuresMostri.isEmpty()) {
             Feature selectedFeature = featuresCandy.get(0);
             Point position = (Point) selectedFeature.geometry();
+            assert position != null;
             latc = position.latitude();
             lonc = position.longitude();
         }
@@ -417,8 +410,10 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             Point position1 = (Point) selectedFeature.geometry();
             Feature selectedFeature2 = featuresCandy.get(0);
             Point position2 = (Point) selectedFeature2.geometry();
+            assert position1 != null;
             latm = position1.latitude();
             lonm = position1.longitude();
+            assert position2 != null;
             latc = position2.latitude();
             lonc = position2.longitude();
         }
@@ -449,49 +444,44 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
             return;
         }
-
+           //ATTENZIONE, nOggetto non è mai false
         if(nOggetto!=-1 || objs.get(posizione).getId()==nOggetto) { //Se trovo un oggetto con quell'ID
             //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
             richiediImgOggetto(nOggetto, posizione);
-            return;
         }
 
     }
 
     //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        switch (requestCode) {
-            case 0: {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode==0) {
                 if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED){
                     Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
                     Intent tornaIndietro=new Intent(getApplicationContext(), MainActivity.class);
                     startActivity(tornaIndietro);
                 }
             }
-        }
     }
 
     //SETTO LA POSIZIONE DELLA CAMERA
     public CameraPosition impostaPosizione(final double lat, final double lon, final boolean find){
         if(find){
-            CameraPosition position = new CameraPosition.Builder()
+            return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
                     .zoom(14)
                     .tilt(50)
                     .build();
-            return position;
         } else {
-            CameraPosition position = new CameraPosition.Builder()
+            return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
                     .zoom(11)
                     .build();
-            return position;
         }
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
     }
@@ -540,6 +530,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     }
      */
 
+        /*
     private void startLocationUpdates() {
         LocationRequest locationRequest = LocationRequest.create();
         locationRequest.setInterval(2000);
@@ -549,6 +540,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                 locationCallback,
                 Looper.getMainLooper());
     }
+    */
 
     //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
     public void richiediImgOggetto(final int numeroOggetto, final int posizione){
