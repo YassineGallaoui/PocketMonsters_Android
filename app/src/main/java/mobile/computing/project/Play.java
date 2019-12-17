@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +31,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.mapbox.android.core.permissions.PermissionsListener;
@@ -72,7 +75,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
     private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
     public String immBase64= "";
-    public Location ultimaPosizione;
     private MapView mapView;
     private MapboxMap mapboxMap;
     private FusedLocationProviderClient fusedLocationClient;
@@ -83,6 +85,8 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     private boolean isInTrackingMode;
     int primaVolta=-1;
     public RequestQueue myRequestQueue = null;
+    double latU;
+    double lonU;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,7 +114,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
             }
         });
 
-        /*locationCallback = new LocationCallback() {
+        locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 if (locationResult == null) {
@@ -120,7 +124,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                     Log.d("Play","OK, POSIZIONE CAMBIATA: "+location.toString());
                 }
             }
-        };*/
+        };
 
     }
 
@@ -129,11 +133,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         super.onResume();
         mapView.onResume();
         richiestaMappa();
-        /*if (requestingLocationUpdates) {
-            Log.d("Play","Ora chiamo un update della posizione");
-            startLocationUpdates();
-            Log.d("Play","Chiamata effettuata");
-        }*/
     }
 
     //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
@@ -203,6 +202,13 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                             enableLocationComponent(style);
                         }
 
+                        //ATTIVO LA RICHIESTA DI UPDATE DELLA POSIZIONE
+                        if (requestingLocationUpdates) {
+                            Log.d("Play","Ora chiamo un update della posizione");
+                            startLocationUpdates();
+                            Log.d("Play","Chiamata effettuata");
+                        }
+
                     }
                 }
         );
@@ -262,7 +268,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                     @Override
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
-                        ultimaPosizione=location;
                         if (location != null) {
                             Log.d("Play", "Ultima posizione rilevata");
                             double lat=location.getLatitude();
@@ -452,6 +457,17 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
 
     }
 
+    //PER INIZIARE GI UPDATE DELLA POSIZIONE
+    private void startLocationUpdates() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setInterval(1000);
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        fusedLocationClient.requestLocationUpdates(locationRequest,
+                locationCallback,
+                Looper.getMainLooper());
+    }
+
     //GESTIONE DEL PERMESSO DI LOCALIZZAZIONE
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -485,62 +501,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         super.onSaveInstanceState(outState);
         mapView.onSaveInstanceState(outState);
     }
-
-        /*
-    protected void createLocationRequest() {
-
-
-        //ATTENZIONE !!!!!!!!!!!  FORSE QUESTA PARTE NON SERVE NEMMENO
-
-        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
-                .addLocationRequest(locationRequest);
-
-        SettingsClient client = LocationServices.getSettingsClient(this);
-        Task<LocationSettingsResponse> task = client.checkLocationSettings(builder.build());
-
-        //!!!  LA SEGUENTE PARTE NON SO SE È DA FARE  !!!
-        //I SETTAGGI DEL DEVICE VANNO BENE
-        task.addOnSuccessListener(this, new OnSuccessListener<LocationSettingsResponse>() {
-            @Override
-            public void onSuccess(LocationSettingsResponse locationSettingsResponse) {
-                // All location settings are satisfied. The client can initialize
-                // location requests here.
-
-            }
-        });
-
-        //I SETTAGGI DEL DEVICE NON VANNO BENE
-        task.addOnFailureListener(this, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                if (e instanceof ResolvableApiException) {
-                    // Location settings are not satisfied, so we show to the user a dialog.
-                    try {
-                        // Show the dialog by calling startResolutionForResult(),
-                        // and check the result in onActivityResult().
-                        ResolvableApiException resolvable = (ResolvableApiException) e;
-                        resolvable.startResolutionForResult(Play.this, 0);
-                    } catch (IntentSender.SendIntentException sendEx) {
-                        // Ignore the error.
-                        Log.d("Play","Errore bellamente ignorato");
-                    }
-                }
-            }
-        });
-    }
-     */
-
-        /*
-    private void startLocationUpdates() {
-        LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(2000);
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-
-        fusedLocationClient.requestLocationUpdates(locationRequest,
-                locationCallback,
-                Looper.getMainLooper());
-    }
-    */
 
     //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
     public void richiediImgOggetto(final int numeroOggetto, final int posizione){
@@ -586,6 +546,25 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     public void mostraOggetto(int nOggetto, int posizione) {
         ArrayList<Oggetto> objs=OggettiMappa.getInstance().getOggettiMappaList();
         Oggetto obj=objs.get(posizione);
+
+        //PRENDO LA MIA POSIZIONE ATTUALE
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(Play.this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            latU=location.getLatitude();
+                            lonU=location.getLongitude();
+                            Log.d("Play", "Ultima posizione rilevata: "+latU+", "+lonU);
+                        } else {
+                            latU=84.844431;
+                            lonU=26.399009;
+                            Log.d("Play", "Nessuna posizionoe rilevata: "+latU+", "+lonU);
+                        }
+                    }
+                });
+
         Intent apriInfo=new Intent(Play.this, infoOggetto.class);
 
         apriInfo.putExtra("id", nOggetto+"");
@@ -593,6 +572,8 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         double cifre = Math.pow(10, 4);
         apriInfo.putExtra("lat", Double.toString(Math.round(obj.getLat() * cifre) / cifre));
         apriInfo.putExtra("lon", Double.toString(Math.round(obj.getLon() * cifre) / cifre));
+        apriInfo.putExtra("latU", Double.toString(Math.round(latU * cifre) / cifre));
+        apriInfo.putExtra("lonU", Double.toString(Math.round(lonU * cifre) / cifre));
         apriInfo.putExtra("size", obj.getSize());
         apriInfo.putExtra("nome", obj.getName());
         apriInfo.putExtra("img", immBase64);

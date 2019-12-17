@@ -1,14 +1,11 @@
 package mobile.computing.project;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.DisplayMetrics;
@@ -17,6 +14,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -24,6 +22,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.mapbox.turf.TurfMeasurement;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,8 +57,12 @@ public class infoOggetto extends Activity {
         String nome= extras.getString("nome");
         tipo= extras.getString("tipo");
         String size= extras.getString("size");
-        String latitudine= extras.getString("lat");
-        String longitudine= extras.getString("lon");
+        Double latitudine= Double.valueOf(extras.getString("lat"));
+        Double longitudine= Double.valueOf(extras.getString("lon"));
+        com.mapbox.geojson.Point posO= com.mapbox.geojson.Point.fromLngLat(longitudine, latitudine);
+        Double latU= Double.valueOf(extras.getString("lonU"));
+        Double lonU= Double.valueOf(extras.getString("lonU"));
+        com.mapbox.geojson.Point posU = com.mapbox.geojson.Point.fromLngLat(lonU, latU);
 
         ImageView imgView = findViewById(R.id.imageView);
         imgView.setImageBitmap(decodedImg);
@@ -68,9 +71,9 @@ public class infoOggetto extends Activity {
         TextView tv2=findViewById(R.id.textView2);
         tv2.setText(size);
         TextView tv3=findViewById(R.id.textView3);
-        tv3.setText(latitudine);
+        tv3.setText(latitudine+"");
         TextView tv4=findViewById(R.id.textView4);
-        tv4.setText(longitudine);
+        tv4.setText(longitudine+"");
 
         Button lascia=findViewById(R.id.button6);
         if(tipo.equals("MO")){
@@ -87,59 +90,72 @@ public class infoOggetto extends Activity {
         if(tipo.equals("MO")){
             azione.setText("Fight");
         } else azione.setText("Eat");
-        azione.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("infoOggetto","OK, sono entrato nella funzione");
-                //prendo il mio session id perchè serve per la chiamata
-                SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                        getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-                String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
 
-                //sono pronto per fare la chiamata
-                myRequestQueue= Volley.newRequestQueue(infoOggetto.this);
-                JSONObject jsonBody = new JSONObject();
-                try {
-                    //metto il valore della session_id e del target_id nella stringa della richiesta
-                    jsonBody.put("session_id", sessionId);
-                    jsonBody.put("target_id", id);
-                    Log.d("infoOggetto","OK, ho preso il session ID "+sessionId+"e il target ID"+id);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+        Log.d("infoOggetto","");
+        Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));
+            //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
+        if(TurfMeasurement.distance( posO, posU)<0.05){
+            azione.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //prendo il mio session id perchè serve per la chiamata
+                    SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                            getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+                    String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
 
-                JsonObjectRequest getResults_Request = new JsonObjectRequest
-                        (Request.Method.POST, BASE_URL + FIGHT_EAT, jsonBody, new Response.Listener<JSONObject>() {
+                    //sono pronto per fare la chiamata
+                    myRequestQueue= Volley.newRequestQueue(infoOggetto.this);
+                    JSONObject jsonBody = new JSONObject();
+                    try {
+                        //metto il valore della session_id e del target_id nella stringa della richiesta
+                        jsonBody.put("session_id", sessionId);
+                        jsonBody.put("target_id", id);
+                        Log.d("infoOggetto","OK, ho preso il session ID "+sessionId+"e il target ID"+id);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
 
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                try {
-                                    Log.d("infoOggetto","Ora inizio a fare la richiesta di fightEat()");
-                                    Log.d("infoOggetto","RISULTATI: "+response.getString("died")
-                                            +", "+response.getString("lp")+", "+response.getString("xp"));
+                    JsonObjectRequest getResults_Request = new JsonObjectRequest
+                            (Request.Method.POST, BASE_URL + FIGHT_EAT, jsonBody, new Response.Listener<JSONObject>() {
 
-                            Intent getResults=new Intent(infoOggetto.this, infoRisultato.class);
-                            getResults.putExtra("img", imgBase64);
-                            getResults.putExtra("life", response.getString("died"));
-                            getResults.putExtra("type", tipo);
-                            getResults.putExtra("lp",response.getString("lp"));
-                            getResults.putExtra("xp",response.getString("xp"));
-                            startActivity(getResults);
-                            finish();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
+                                @Override
+                                public void onResponse(JSONObject response) {
+                                    try {
+                                        Log.d("infoOggetto","Ora inizio a fare la richiesta di fightEat()");
+                                        Log.d("infoOggetto","RISULTATI: "+response.getString("died")
+                                                +", "+response.getString("lp")+", "+response.getString("xp"));
+
+                                        Intent getResults=new Intent(infoOggetto.this, infoRisultato.class);
+                                        getResults.putExtra("img", imgBase64);
+                                        getResults.putExtra("life", response.getString("died"));
+                                        getResults.putExtra("type", tipo);
+                                        getResults.putExtra("lp",response.getString("lp"));
+                                        getResults.putExtra("xp",response.getString("xp"));
+                                        startActivity(getResults);
+                                        finish();
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
                                 }
-                            }
-                        }, new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
-                            }
-                        });
+                            }, new Response.ErrorListener() {
+                                @Override
+                                public void onErrorResponse(VolleyError error) {
+                                    Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
+                                }
+                            });
 
-                myRequestQueue.add(getResults_Request);
-            }
-        });
+                    myRequestQueue.add(getResults_Request);
+                }
+            });
+        } else {
+            azione.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(getApplicationContext(), "Oggetto troppo lontano! Avvicinarsi fino a raggiungere una distanza minore di 50!", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
     }
 
     @Override
