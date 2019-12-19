@@ -25,8 +25,7 @@
             android:name=".Classifica"
             android:theme="@android:style/Theme.Light.NoTitleBar" />
         <activity
-            android:name=".Profilo"
-            android:theme="@android:style/Theme.Light.NoTitleBar" />
+            android:name=".Profilo" />
         <activity
             android:name=".SplashScreen"
             android:theme="@android:style/Theme.NoTitleBar.Fullscreen">

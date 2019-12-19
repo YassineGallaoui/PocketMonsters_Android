@@ -1,6 +1,5 @@
 package mobile.computing.project;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -19,6 +18,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -32,24 +37,16 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class Profilo extends Activity {
+public class Profilo extends AppCompatActivity {
     private int PICK_IMAGE_REQUEST = 1;
     private String imgBase64="";
     private String imgBase64Nuova="";
+    public RequestQueue rankRequesteQueue=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
-
-        Button goToRanking=findViewById(R.id.button5);
-        goToRanking.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
-                startActivity(vaiAClassifica);
-            }
-        });
 
         Button salva=findViewById(R.id.buttonFine);
         salva.setOnClickListener(new View.OnClickListener() {
@@ -100,6 +97,60 @@ public class Profilo extends Activity {
                 }
         );
         requestQueue.add(getProfile_Request);
+    }
+
+
+    public void vaiAlSecFragment(View v) {
+        fClassifica fragmentC= new fClassifica();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.container, fragmentC);
+        transaction.commit();
+        visClassifica();
+        //Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
+        //startActivity(vaiAClassifica);
+    }
+
+    public void visClassifica(){
+        RecyclerView list=findViewById(R.id.list);
+        list.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        final UserAdapter userAdapter= new UserAdapter(this, this, UserModel.getInstance().getRanking());
+        list.setAdapter(userAdapter);
+        rankRequesteQueue= Volley.newRequestQueue(this);
+
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+
+        JSONObject jsonBody= new JSONObject();
+        try{
+            jsonBody.put("session_id", sessionId);
+        } catch (JSONException e){
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest getRankingRequest = new JsonObjectRequest(
+                "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php",
+                jsonBody,
+                new Response.Listener<JSONObject>(){
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        UserModel.getInstance().uploadRanking(response);
+                        userAdapter.notifyDataSetChanged();
+                        Log.d("richiesta andata bene", response.toString());
+                    }
+                },
+                new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError error){
+                        Toast toast= Toast.makeText(getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+
+                }
+        );
+
+        rankRequesteQueue.add(getRankingRequest);
     }
 
     public void impostaLayout(String user, String image, String xp, String lp){
