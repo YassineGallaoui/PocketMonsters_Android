@@ -43,11 +43,13 @@ public class Profilo extends AppCompatActivity {
     private String imgBase64Nuova="";
     public RequestQueue rankRequesteQueue=null;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
-
+        fUser firstFragment = new fUser();
+        getSupportFragmentManager().beginTransaction().add(R.id.container, firstFragment).commit();
         Button salva=findViewById(R.id.buttonFine);
         salva.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,56 +104,14 @@ public class Profilo extends AppCompatActivity {
 
     public void vaiAlSecFragment(View v) {
         fClassifica fragmentC= new fClassifica();
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, fragmentC);
         transaction.commit();
-        visClassifica();
         //Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
         //startActivity(vaiAClassifica);
     }
 
-    public void visClassifica(){
-        RecyclerView list=findViewById(R.id.list);
-        list.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        final UserAdapter userAdapter= new UserAdapter(this, this, UserModel.getInstance().getRanking());
-        list.setAdapter(userAdapter);
-        rankRequesteQueue= Volley.newRequestQueue(this);
 
-        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-
-        JSONObject jsonBody= new JSONObject();
-        try{
-            jsonBody.put("session_id", sessionId);
-        } catch (JSONException e){
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest getRankingRequest = new JsonObjectRequest(
-                "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php",
-                jsonBody,
-                new Response.Listener<JSONObject>(){
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        UserModel.getInstance().uploadRanking(response);
-                        userAdapter.notifyDataSetChanged();
-                        Log.d("richiesta andata bene", response.toString());
-                    }
-                },
-                new Response.ErrorListener(){
-                    @Override
-                    public void onErrorResponse(VolleyError error){
-                        Toast toast= Toast.makeText(getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
-                        toast.show();
-                    }
-
-                }
-        );
-
-        rankRequesteQueue.add(getRankingRequest);
-    }
 
     public void impostaLayout(String user, String image, String xp, String lp){
         TextView profileXP= findViewById(R.id.profileXP);
