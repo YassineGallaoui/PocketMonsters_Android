@@ -56,12 +56,12 @@ public class fClassifica extends Fragment {
         super.onStart();
         Log.d("ciao", "sono partito");
         RecyclerView list = getActivity().findViewById(R.id.list);
-        list.setLayoutManager(new LinearLayoutManager(getContext()));
-        final UserAdapter userAdapter = new UserAdapter(getContext(), getActivity(), UserModel.getInstance().getRanking());
+        list.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
+        final UserAdapter userAdapter = new UserAdapter(getActivity().getApplicationContext(), getActivity(), UserModel.getInstance().getRanking());
         list.setAdapter(userAdapter);
-        rankRequesteQueue = Volley.newRequestQueue(getContext());
+        rankRequesteQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
-        SharedPreferences sharedPref = getContext().getSharedPreferences(
+        SharedPreferences sharedPref = getActivity().getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
 
@@ -86,7 +86,7 @@ public class fClassifica extends Fragment {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
+                        Toast toast = Toast.makeText(getActivity().getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
                         toast.show();
                     }
 
