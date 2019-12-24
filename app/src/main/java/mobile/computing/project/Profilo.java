@@ -58,14 +58,6 @@ public class Profilo extends AppCompatActivity {
             }
         });
 
-        final Button goBack=findViewById(R.id.button3);
-        goBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent vaiIndietro= new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(vaiIndietro);
-            }
-        });
 
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(

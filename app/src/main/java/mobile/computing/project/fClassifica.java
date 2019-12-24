@@ -48,17 +48,24 @@ public class fClassifica extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_f_classifica, container, false);
+        View view= inflater.inflate(R.layout.fragment_f_classifica, container, false);
+        RecyclerView list = view.findViewById(R.id.list);
+
+        list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        final UserAdapter userAdapter = new UserAdapter(getContext(), getActivity(), UserModel.getInstance().getRanking());
+
+        list.setAdapter(userAdapter);
+
+        return view;
     }
 
     @Override
     public void onStart() {
+        //onStart rende il fragment visibile all'utente
         super.onStart();
         Log.d("ciao", "sono partito");
-        RecyclerView list = getActivity().findViewById(R.id.list);
-        list.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
-        final UserAdapter userAdapter = new UserAdapter(getActivity().getApplicationContext(), getActivity(), UserModel.getInstance().getRanking());
-        list.setAdapter(userAdapter);
+        //creo un elemento di tipo RecyclerView e gli associo un elemento XML di tipo lista
+
         rankRequesteQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 
         SharedPreferences sharedPref = getActivity().getApplicationContext().getSharedPreferences(
@@ -79,7 +86,7 @@ public class fClassifica extends Fragment {
                     @Override
                     public void onResponse(JSONObject response) {
                         UserModel.getInstance().uploadRanking(response);
-                        userAdapter.notifyDataSetChanged();
+                        //userAdapter.notifyDataSetChanged();
                         Log.d("richiesta andata bene", response.toString());
                     }
                 },
