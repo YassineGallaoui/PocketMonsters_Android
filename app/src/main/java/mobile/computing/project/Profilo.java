@@ -50,6 +50,7 @@ public class Profilo extends AppCompatActivity {
         setContentView(R.layout.activity_profilo);
         fUser firstFragment = new fUser();
         getSupportFragmentManager().beginTransaction().add(R.id.container, firstFragment).commit();
+
         Button salva=findViewById(R.id.buttonFine);
         salva.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -159,9 +160,7 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void saveChanges(){
-
         Log.d("Profilo", "Cliccato fine");
-
             //FACCIO CHIAMATA AL SERVER PER SETTARE IL NUOVO NOME E/O LA NUOVA FOTO PROFILO
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
