@@ -26,7 +26,6 @@ public class UserModel {
                 JSONObject userJSON= rankingJSON.getJSONObject(i);
                 User user= new User(userJSON);
                 usersTop20.add(user);
-
             }
         }catch (JSONException e){
             e.printStackTrace();

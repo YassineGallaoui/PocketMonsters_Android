@@ -19,10 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -61,10 +58,7 @@ public class Profilo extends AppCompatActivity {
         final Button goBack=findViewById(R.id.button3);
         goBack.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                Intent vaiIndietro= new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(vaiIndietro);
-            }
+            public void onClick(View v) { startActivity(new Intent(getApplicationContext(), MainActivity.class));}
         });
 
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
@@ -74,7 +68,7 @@ public class Profilo extends AppCompatActivity {
 
         JSONObject jsonBody = new JSONObject();
         try {jsonBody.put("session_id", sessionId); }
-        catch (JSONException e) {e.printStackTrace(); }
+        catch (JSONException e) {e.printStackTrace();}
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         JsonObjectRequest getProfile_Request = new JsonObjectRequest(Request.Method.POST,"https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
