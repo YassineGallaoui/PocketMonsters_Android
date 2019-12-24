@@ -91,10 +91,10 @@ public class infoOggetto extends Activity {
             azione.setText("Fight");
         } else azione.setText("Eat");
 
-        Log.d("infoOggetto","posizione del ");
+        Log.d("infoOggetto","posizione dell'oggetto: "+latitudine+ ", "+longitudine);
         Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));
             //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
-        if(TurfMeasurement.distance( posO, posU)<0.05){
+        if(TurfMeasurement.distance( posO, posU)>0.05){ //QUESTO DOVRÀ ESSERE CAMBIATO DA MAGGIORE A MINORE
             azione.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
