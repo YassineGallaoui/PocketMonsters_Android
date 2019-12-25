@@ -13,49 +13,46 @@ public class User {
 
 
     //costruttore generico
-    public User(String sessionId, String username, String image){
-        this.sessionId=sessionId;
-        this.username=username;
-        this.image=image;
+    public User(String sessionId, String username, String image) {
+        this.sessionId = sessionId;
+        this.username = username;
+        this.image = image;
     }
 
-    public User(JSONObject userJSON){
+    public User(JSONObject userJSON) {
         try {
-            this.username=userJSON.getString("username");
-            this.image=userJSON.getString("img");
-            this.XP=userJSON.getInt("xp");
-            this.LP=userJSON.getInt("lp");
-        }
-        catch (JSONException e){
+            this.username = userJSON.getString("username");
+            this.image = userJSON.getString("img");
+            this.XP = userJSON.getInt("xp");
+            this.LP = userJSON.getInt("lp");
+        } catch (JSONException e) {
             e.printStackTrace();
         }
-
     }
 
-    public String getUsername(){
+    public String getUsername() {
         return username;
     }
 
-    public void setUsername(String username){
-        this.username= username;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getImage(){
+    public String getImage() {
         return image;
     }
 
-    public void setImage(String image){
-        this.image=image;
+    public void setImage(String image) {
+        this.image = image;
     }
 
-    public int getXP(){
+    public int getXP() {
         return XP;
-}
+    }
 
-    public int getLP(){
+    public int getLP() {
         return LP;
     }
-
 
 
 }

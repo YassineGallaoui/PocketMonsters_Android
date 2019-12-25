@@ -11,33 +11,31 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class UserAdapter extends RecyclerView.Adapter<ListElement> {
+    int pos = 0;
     private LayoutInflater inflater;
     private Activity parentActivity;
     private ArrayList<User> usersTop20;
-    int pos=0;
 
-    public UserAdapter(Context context, Activity parentActivity, ArrayList<User> usersTop20){
-        this.inflater= LayoutInflater.from(context);
-        this.parentActivity= parentActivity;
-        this.usersTop20= usersTop20;
+    public UserAdapter(Context context, Activity parentActivity, ArrayList<User> usersTop20) {
+        this.inflater = LayoutInflater.from(context);
+        this.parentActivity = parentActivity;
+        this.usersTop20 = usersTop20;
     }
 
     @Override
-    public ListElement onCreateViewHolder(ViewGroup parent, int viewType){
-        View view=inflater.inflate(R.layout.list_element, parent, false);
+    public ListElement onCreateViewHolder(ViewGroup parent, int viewType) {
+        View view = inflater.inflate(R.layout.list_element, parent, false);
         return new ListElement(view, parentActivity);
     }
 
     @Override
-    public void onBindViewHolder(ListElement holder, int position){
-        User user=usersTop20.get(position);
-        pos++;
-        holder.setUser(user, pos);
-
+    public void onBindViewHolder(ListElement holder, int position) {
+        User user = usersTop20.get(position);
+        holder.setUser(user, position+1);
     }
 
     @Override
-    public int getItemCount(){
+    public int getItemCount() {
         return usersTop20.size();
     }
 

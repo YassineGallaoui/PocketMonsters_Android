@@ -18,6 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+        <!--    TUTTA QUESTA ROBA LA FACCIAMO DA JAVA, NON LA FACCIAMO IN XML
         <fragment
             android:id="@+id/fragment"
             android:name="mobile.computing.project.fClassifica"
@@ -25,7 +26,13 @@
             android:layout_height="28dp" />
 
         <fragment
-            android:id="@+id/fragment4"
+            android:id="@+id/fragmentU"
+            android:name="mobile.computing.project.fUser"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+            -->
+        <fragment
+            android:id="@+id/fragment"
             android:name="mobile.computing.project.fUser"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

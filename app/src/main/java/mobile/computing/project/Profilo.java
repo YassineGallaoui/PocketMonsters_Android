@@ -12,7 +12,6 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -35,58 +34,49 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class Profilo extends AppCompatActivity {
+    public RequestQueue rankRequesteQueue = null;
     private int PICK_IMAGE_REQUEST = 1;
-    private String imgBase64="";
-    private String imgBase64Nuova="";
-    public RequestQueue rankRequesteQueue=null;
-
+    private String imgBase64 = "";
+    private String imgBase64Nuova = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
-        fUser firstFragment = new fUser();
-        getSupportFragmentManager().beginTransaction().add(R.id.container, firstFragment).commit();
-        Button salva=findViewById(R.id.buttonFine);
-        salva.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveChanges();
-            }
-        });
-
-        final Button goBack=findViewById(R.id.button3);
-        goBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) { startActivity(new Intent(getApplicationContext(), MainActivity.class));}
-        });
+        Log.d("Profilo", "Entrato nell'onCreate");
 
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+        Log.d("Profilo", "Session ID preso");
 
         JSONObject jsonBody = new JSONObject();
-        try {jsonBody.put("session_id", sessionId); }
-        catch (JSONException e) {e.printStackTrace();}
+        try {
+            jsonBody.put("session_id", sessionId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
-        JsonObjectRequest getProfile_Request = new JsonObjectRequest(Request.Method.POST,"https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
-                jsonBody,new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        //GESTISCO LA RISPOSTA, OVVERO INSERISCO LE COSE (NOME ECC...) DENTRO I CAMPI
-                        User u= new User(response);
-                        String xp=u.getXP()+"";
-                        String lp=u.getLP()+"";
-                        String username=u.getUsername()+"";
-                        String image=u.getImage()+"";
-                        impostaLayout(username, image, xp, lp);
-                    }
-                },
+        JsonObjectRequest getProfile_Request = new JsonObjectRequest(Request.Method.POST, "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",
+                jsonBody, new Response.Listener<JSONObject>() {
+            @Override
+            public void onResponse(JSONObject response) {
+                //GESTISCO LA RISPOSTA, OVVERO INSERISCO LE COSE (NOME ECC...) DENTRO I CAMPI
+                Log.d("Profilo", "Richiesta effettuata con successo, ora chiamo la funzione per compilare i campi");
+                User u = new User(response);
+                String xp = u.getXP() + "";
+                String lp = u.getLP() + "";
+                String username = u.getUsername() + "";
+                String image = u.getImage() + "";
+                impostaLayout(username, image, xp, lp);
+            }
+        },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
+                        Log.d("Profilo", "Richiesta fallita");
                         Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
                         toast.show();
                     }
@@ -95,27 +85,32 @@ public class Profilo extends AppCompatActivity {
         requestQueue.add(getProfile_Request);
     }
 
+    public void vaiIndietro(View v){
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+    }
+
+    public void fine(View v){
+        saveChanges();
+    }
 
     public void vaiAlSecFragment(View v) {
-        fClassifica fragmentC= new fClassifica();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, fragmentC);
+        transaction.replace(R.id.container, new fClassifica());
+        transaction.addToBackStack(null);
         transaction.commit();
         //Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
         //startActivity(vaiAClassifica);
     }
 
-
-
-    public void impostaLayout(String user, String image, String xp, String lp){
-        TextView profileXP= findViewById(R.id.profileXP);
-        TextView profileLP= findViewById(R.id.profileLP);
-        TextView profileUsername= findViewById(R.id.username);
-        ImageView profileImage= findViewById(R.id.userImage);
+    public void impostaLayout(String user, String image, String xp, String lp) {
+        TextView profileXP = findViewById(R.id.profileXP);
+        TextView profileLP = findViewById(R.id.profileLP);
+        TextView profileUsername = findViewById(R.id.username);
+        ImageView profileImage = findViewById(R.id.userImage);
 
         // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
         //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
-        if (!(image.equals("null")) && imgBase64Nuova.equals("")){
+        if (!(image.equals("null")) && imgBase64Nuova.equals("")) {
             imgBase64 = image;
             Bitmap img = base64ToBitmap(imgBase64);
             profileImage.setImageBitmap(img);
@@ -133,7 +128,7 @@ public class Profilo extends AppCompatActivity {
     }
 
     //APRO LA FINESTRA PER FAR SCEGLIERE UNA NUOVA IMMAGINE ALL'UTENTE
-    public void apriLibreria(View v){
+    public void apriLibreria(View v) {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
@@ -148,40 +143,40 @@ public class Profilo extends AppCompatActivity {
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             Uri uri = data.getData();
             try {
-                ImageView imageView =findViewById(R.id.userImage);
+                ImageView imageView = findViewById(R.id.userImage);
                 imageView.setImageBitmap(MediaStore.Images.Media.getBitmap(getContentResolver(), uri));
                 BitmapDrawable drawable = (BitmapDrawable) imageView.getDrawable();
                 Bitmap bitmapCorretta = drawable.getBitmap();
-                imgBase64Nuova= bitmapToBase64(bitmapCorretta);
-                imgBase64=imgBase64Nuova;
+                imgBase64Nuova = bitmapToBase64(bitmapCorretta);
+                imgBase64 = imgBase64Nuova;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    public void saveChanges(){
+    public void saveChanges() {
 
         Log.d("Profilo", "Cliccato fine");
 
-            //FACCIO CHIAMATA AL SERVER PER SETTARE IL NUOVO NOME E/O LA NUOVA FOTO PROFILO
+        //FACCIO CHIAMATA AL SERVER PER SETTARE IL NUOVO NOME E/O LA NUOVA FOTO PROFILO
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-        EditText username=findViewById(R.id.username);
-        String value=username.getText().toString();
-        RequestQueue saveQueue= Volley.newRequestQueue(this);
-        JSONObject jsonBody= new JSONObject();
-        try{
+        EditText username = findViewById(R.id.username);
+        String value = username.getText().toString();
+        RequestQueue saveQueue = Volley.newRequestQueue(this);
+        JSONObject jsonBody = new JSONObject();
+        try {
             jsonBody.put("session_id", sessionId);
             jsonBody.put("username", value);
-            Log.d("Profilo", "La stringa che descrive la nuova immagine è: "+imgBase64);
+            Log.d("Profilo", "La stringa che descrive la nuova immagine è: " + imgBase64);
             jsonBody.put("img", imgBase64);
-        }catch(JSONException e){
+        } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        JsonObjectRequest setProfile_request= new JsonObjectRequest(Request.Method.POST,"https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php", jsonBody,
+        JsonObjectRequest setProfile_request = new JsonObjectRequest(Request.Method.POST, "https://ewserver.di.unimi.it/mobicomp/mostri/setprofile.php", jsonBody,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -200,18 +195,20 @@ public class Profilo extends AppCompatActivity {
         saveQueue.add(setProfile_request);
     }
 
-    private String bitmapToBase64(Bitmap bitmap){
-        ByteArrayOutputStream byteArrayOutputStream= new ByteArrayOutputStream();
+    private String bitmapToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
-        byte[] byteArray= byteArrayOutputStream.toByteArray();
+        byte[] byteArray = byteArrayOutputStream.toByteArray();
         return Base64.encodeToString(byteArray, Base64.DEFAULT);
     }
 
-    private Bitmap base64ToBitmap(String b64){
-        byte[] imageAsBytes= Base64.decode(b64.getBytes(), Base64.DEFAULT);
-        return BitmapFactory.decodeByteArray(imageAsBytes,0, imageAsBytes.length);
+    private Bitmap base64ToBitmap(String b64) {
+        byte[] imageAsBytes = Base64.decode(b64.getBytes(), Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(imageAsBytes, 0, imageAsBytes.length);
     }
 
-    protected void onResume() { super.onResume(); }
+    protected void onResume() {
+        super.onResume();
+    }
 }
 

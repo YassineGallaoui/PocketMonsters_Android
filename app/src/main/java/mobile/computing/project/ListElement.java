@@ -27,9 +27,8 @@ public class ListElement extends RecyclerView.ViewHolder{
 
     public void setUser(User user, int i){
         listUsername.setText(user.getUsername());
-        listXP.setText(Integer.toString(user.getXP()) + " XP");
-        listLP.setText(Integer.toString(user.getLP()) + " LP");
+        listXP.setText(user.getXP() + " XP");
+        listLP.setText(user.getLP() + " LP");
         listRankingPosition.setText(Integer.toString(i));
-
     }
 }
