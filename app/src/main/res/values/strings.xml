@@ -3,11 +3,9 @@
     <string name="play">PLAY</string>
     <string name="username">Username</string>
     <string name="preference_file_session_id" />
-    <string name="indietro">Indietro</string>
-    <string name="fine">Fine</string>
-    <string name="cambia_immagine">Cambia immagine</string>
+    <string name="cambia_immagine">Change image</string>
     <string name="imgProfilo">Immagine di profilo dell\'utente</string>
-    <string name="classifica"> Classifica </string>
+    <string name="classifica"> Ranking </string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

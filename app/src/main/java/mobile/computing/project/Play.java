@@ -1,7 +1,6 @@
 package mobile.computing.project;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,12 +13,11 @@ import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -35,6 +33,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -67,14 +66,14 @@ import static com.mapbox.mapboxsdk.camera.CameraUpdateFactory.newCameraPosition;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 
-public class Play extends Activity implements OnMapReadyCallback, OnLocationClickListener, OnCameraTrackingChangedListener, PermissionsListener {
+public class Play extends AppCompatActivity implements OnMapReadyCallback, OnLocationClickListener, OnCameraTrackingChangedListener, PermissionsListener {
 
     public static final String BASE_URL = "https://ewserver.di.unimi.it/mobicomp/mostri/";
     public static final String GET_MAP = "getmap.php";
     public static final String GET_IMAGE = "getimage.php";
+    public static final String FIGHT_EAT="fighteat.php";
     private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
     private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
-    private static final String LAYER_CERCHIO = "LAYER_CERCHIO";
     public String immBase64 = "";
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -105,7 +104,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         }
 
         //GESTIONE BOTTONE INDIETRO
-        Button btnindietro = findViewById(R.id.button3);
+        FloatingActionButton btnindietro = findViewById(R.id.buttonIndietro);
         btnindietro.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -167,7 +166,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
 
             }
         };
-
     }
 
     @Override
@@ -279,7 +277,6 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
                         TextView tvxp = findViewById(R.id.textView7);
                         TextView tvlp = findViewById(R.id.textView8);
                         User u = new User(response);
-                        ImageView profileImage = findViewById(R.id.userImage);
                         tvxp.setText("  XP: " + u.getXP() + "  ");
                         tvlp.setText("  LP: " + u.getLP() + "  ");
                     }
@@ -407,7 +404,7 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
         // Add the camera tracking listener. Fires if the map camera is manually moved.
         locationComponent.addOnCameraTrackingChangedListener(this);
 
-        Button you = findViewById(R.id.buttonYou);
+        FloatingActionButton you = findViewById(R.id.buttonYou);
 
 
         you.setOnClickListener(new View.OnClickListener() {
@@ -683,4 +680,5 @@ public class Play extends Activity implements OnMapReadyCallback, OnLocationClic
     @Override
     public void onLocationComponentClick() {
     }
+
 }
