@@ -49,14 +49,10 @@ public class Profilo extends AppCompatActivity {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-        Log.d("Profilo", "Session ID preso");
 
         JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("session_id", sessionId);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        try {jsonBody.put("session_id", sessionId); }
+        catch (JSONException e) {e.printStackTrace();}
 
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         JsonObjectRequest getProfile_Request = new JsonObjectRequest(Request.Method.POST, "https://ewserver.di.unimi.it/mobicomp/mostri/getprofile.php",

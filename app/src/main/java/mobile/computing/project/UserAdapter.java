@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 public class UserAdapter extends RecyclerView.Adapter<ListElement> {
-    int pos = 0;
     private LayoutInflater inflater;
     private Activity parentActivity;
     private ArrayList<User> usersTop20;
