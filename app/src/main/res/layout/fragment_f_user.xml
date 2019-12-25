@@ -41,6 +41,7 @@
         android:id="@+id/changeImage"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/montserrat_alternates_bold"
         android:onClick="apriLibreria"
         android:text="@string/cambia_immagine"
         android:textColor="#304FFE"
