@@ -69,11 +69,31 @@ public class infoOggetto extends Activity {
         TextView tv1=findViewById(R.id.textView);
         tv1.setText(nome);
         TextView tv2=findViewById(R.id.textView2);
-        tv2.setText(size);
-        TextView tv3=findViewById(R.id.textView3);
-        tv3.setText(latitudine+"");
-        TextView tv4=findViewById(R.id.textView4);
-        tv4.setText(longitudine+"");
+        TextView description=findViewById(R.id.textView9);
+        if(size.equals("S")){
+            tv2.setText("I'm small!");
+            if(tipo.equals("CA"))
+                description.setText("Puoi guadagnare da 0 a 50 LP");
+            else
+                description.setText("Puoi guadagnare 1 XP... o perdere da 0 a 50 LP");
+        }
+
+        if(size.equals("M")){
+            tv2.setText("Sono medio!");
+            if(tipo.equals("CA"))
+                description.setText("Puoi guadagnare da 25 a 75 LP");
+            else
+                description.setText("Puoi guadagnare 3 XP... o perdere da 25 a 75 LP");
+        }
+
+        if(size.equals("L")){
+            tv2.setText("Sono grande!");
+            if(tipo.equals("CA"))
+                description.setText("Pui guadagnare da 50 a 100 LP");
+            else
+                description.setText("Puoi guadagnare 10 XP... o perdere da 50 a 100 LP ");
+        }
+
 
         Button lascia=findViewById(R.id.button6);
         if(tipo.equals("MO")){

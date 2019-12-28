@@ -277,8 +277,8 @@ public class Play extends AppCompatActivity implements OnMapReadyCallback, OnLoc
                         TextView tvxp = findViewById(R.id.textView7);
                         TextView tvlp = findViewById(R.id.textView8);
                         User u = new User(response);
-                        tvxp.setText("  XP: " + u.getXP() + "  ");
-                        tvlp.setText("  LP: " + u.getLP() + "  ");
+                        tvxp.setText("  " + u.getXP() + " XP  ");
+                        tvlp.setText("  " + u.getLP() + " LP  ");
                     }
                 },
                 new Response.ErrorListener() {
@@ -372,7 +372,6 @@ public class Play extends AppCompatActivity implements OnMapReadyCallback, OnLoc
         // Create and customize the LocationComponent's options
         LocationComponentOptions customLocationComponentOptions = LocationComponentOptions.builder(this)
                 .layerBelow(LAYER_MOSTRI)
-                .bearingTintColor(getResources().getColor(R.color.positionCircle))
                 .accuracyAlpha(.7f)
                 .accuracyColor(Color.CYAN)
                 .build();

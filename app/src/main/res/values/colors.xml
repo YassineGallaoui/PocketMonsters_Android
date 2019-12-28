@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primaryColor">#bf360c</color>
-    <color name="primaryLightColor">#ff6035</color>
-    <color name="primaryDarkColor">#900000</color>
-    <color name="secondaryColor">#FBEAE7</color>
-    <color name="secondaryLightColor">#FBEAE7</color>
-    <color name="secondaryDarkColor">#FBEAE7</color>
+    <color name="primaryColor">#ff5722</color>
     <color name="primaryTextColor">#ffffff</color>
     <color name="secondaryTextColor">#000000</color>
-    <color name="positionCircle">#ffe54c</color>
 </resources>

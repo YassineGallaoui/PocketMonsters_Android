@@ -94,8 +94,6 @@ public class Profilo extends AppCompatActivity {
         transaction.replace(R.id.container, new fClassifica());
         transaction.addToBackStack(null);
         transaction.commit();
-        //Intent vaiAClassifica= new Intent(Profilo.this, Classifica.class);
-        //startActivity(vaiAClassifica);
     }
 
     public void impostaLayout(String user, String image, String xp, String lp) {

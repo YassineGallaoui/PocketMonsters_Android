@@ -11,15 +11,15 @@
     <fragment
         android:id="@+id/fragment2"
         android:name="mobile.computing.project.fUser"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.4" />
+        android:layout_weight="0.6" />
 
     <fragment
         android:id="@+id/fragment3"
         android:name="mobile.computing.project.fClassifica"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="0.6" />
+        android:layout_weight="0.4" />
 
 </LinearLayout>
