@@ -12,10 +12,10 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -26,6 +26,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,12 +40,73 @@ public class Profilo extends AppCompatActivity {
     private String imgBase64 = "";
     private String imgBase64Nuova = "";
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profilo);
-        Log.d("Profilo", "Entrato nell'onCreate");
 
+        //FACCIO CHIAMATA DI SERVER PER PRENDERE LE MIE INFORMAZIONI E IMPOSTARLE NEL FRAGMENT
+        whoIAm();
+
+    }
+
+    public void vaiIndietro(View v){
+        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+    }
+
+    public void fine(View v){
+        InputMethodManager imm =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(findViewById(R.id.container).getWindowToken(), 0);
+        saveChanges();
+    }
+
+    public void vaiAlSecFragment(View v) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, new fClassifica());
+        transaction.commit();
+
+    }
+
+    public void backProfilo(View w){
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.container, new fUser());
+        transaction.commit();
+        whoIAm();
+    }
+
+    public void impostaLayoutF1(String user, String image, String xp, String lp) {
+        TextView profileXP = findViewById(R.id.profileXP);
+        TextView profileLP = findViewById(R.id.profileLP);
+        TextView profileUsername = findViewById(R.id.username);
+        ImageView profileImage = findViewById(R.id.userImage);
+
+        // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
+        //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
+        if (!(image.equals("null")) && imgBase64Nuova.equals("")) {
+            imgBase64 = image;
+            Bitmap img = base64ToBitmap(imgBase64);
+            profileImage.setImageBitmap(img);
+        }
+        //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
+        if (!(image.equals("null")) && !imgBase64Nuova.equals("")) {
+            imgBase64 = imgBase64Nuova;
+            Bitmap img = base64ToBitmap(imgBase64);
+            profileImage.setImageBitmap(img);
+            saveChanges();
+        }
+        //SE NON C'È ALCUNA IMMAGINE
+        if (!(image.equals("null")) && !imgBase64Nuova.equals("")) {
+            profileImage.setImageResource(R.mipmap.user);
+            saveChanges();
+        }
+        profileUsername.setText(user);
+        profileXP.setText(xp);
+        profileLP.setText(lp);
+    }
+
+    public void whoIAm(){
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
@@ -66,59 +128,19 @@ public class Profilo extends AppCompatActivity {
                 String lp = u.getLP() + "";
                 String username = u.getUsername() + "";
                 String image = u.getImage() + "";
-                impostaLayout(username, image, xp, lp);
+                impostaLayoutF1(username, image, xp, lp);
             }
         },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("Profilo", "Richiesta fallita");
-                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
-                        toast.show();
+                        Snackbar.make(findViewById(R.id.container), "Error requesting user informations", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 }
         );
         requestQueue.add(getProfile_Request);
-    }
-
-    public void vaiIndietro(View v){
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
-    }
-
-    public void fine(View v){
-        saveChanges();
-    }
-
-    public void vaiAlSecFragment(View v) {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, new fClassifica());
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
-
-    public void impostaLayout(String user, String image, String xp, String lp) {
-        TextView profileXP = findViewById(R.id.profileXP);
-        TextView profileLP = findViewById(R.id.profileLP);
-        TextView profileUsername = findViewById(R.id.username);
-        ImageView profileImage = findViewById(R.id.userImage);
-
-        // se il parametro IMG è diverso da null, allora prendi stringa base64 e converti in bitmap
-        //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
-        if (!(image.equals("null")) && imgBase64Nuova.equals("")) {
-            imgBase64 = image;
-            Bitmap img = base64ToBitmap(imgBase64);
-            profileImage.setImageBitmap(img);
-        }
-        //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
-        if (!(image.equals("null")) && !imgBase64Nuova.equals("")) {
-            imgBase64 = imgBase64Nuova;
-            Bitmap img = base64ToBitmap(imgBase64);
-            profileImage.setImageBitmap(img);
-            saveChanges();
-        }
-        profileUsername.setText(user);
-        profileXP.setText(xp);
-        profileLP.setText(lp);
     }
 
     //APRO LA FINESTRA PER FAR SCEGLIERE UNA NUOVA IMMAGINE ALL'UTENTE
@@ -164,7 +186,6 @@ public class Profilo extends AppCompatActivity {
         try {
             jsonBody.put("session_id", sessionId);
             jsonBody.put("username", value);
-            Log.d("Profilo", "La stringa che descrive la nuova immagine è: " + imgBase64);
             jsonBody.put("img", imgBase64);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -175,14 +196,16 @@ public class Profilo extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("SetProfile", "Andato a buon fine");
-                        Toast.makeText(getApplicationContext(), "Data successfully saved : )", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(findViewById(R.id.container), "Data successfully saved", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("SetProfile", "Andata male");
-                        Toast.makeText(getApplicationContext(), "Something went wrong : (", Toast.LENGTH_SHORT).show();
+                        Snackbar.make(findViewById(R.id.container), "Error saving user informations", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
                 }
         );
