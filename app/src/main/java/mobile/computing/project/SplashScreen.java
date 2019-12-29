@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ImageView;
 
 public class SplashScreen extends Activity {
 
     private ImageView miaImmagine;
-    int t=1000;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -22,23 +23,28 @@ public class SplashScreen extends Activity {
         Thread timerThread = new Thread() {
             public void run() {
                 try {
-                    sleep(t);
+                    while(!checkConnection()){
+                        Log.d("SplashScreen", "Non sei connesso alla rete");
+                        sleep(100);
+                    }
+                    if(checkConnection()){
+                        Log.d("SplashScreen", "Ora sei connesso alla rete");
+                        sleep(900);
+                    }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 } finally {
-                    //CONTROLLO SE INTERNET È ACCESO
-                    ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
-                    while(true){
-                        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-                                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
-                            //SIAMO CONNESSI A UNA QUALCHE RETE
-                            Intent vaiAlGioco=new Intent(getApplicationContext(), MainActivity.class);
-                            startActivity(vaiAlGioco);
-                        }
-                    }
+                    Intent vaiAlGioco=new Intent(getApplicationContext(), MainActivity.class);
+                    startActivity(vaiAlGioco);
                 }
             }
         };
         timerThread.start();
+    }
+
+    public boolean checkConnection(){
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        return (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED);
     }
 }

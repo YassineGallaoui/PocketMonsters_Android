@@ -47,7 +47,7 @@ public class fClassifica extends Fragment {
     public void onResume() {
         //onStart rende il fragment visibile all'utente
         super.onResume();
-        Log.d("ciao", "sono partito");
+
         //creo un elemento di tipo RecyclerView e gli associo un elemento XML di tipo lista
 
         rankRequesteQueue = Volley.newRequestQueue(getActivity().getApplicationContext());

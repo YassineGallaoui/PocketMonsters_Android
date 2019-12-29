@@ -14,7 +14,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,6 +33,7 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
@@ -329,8 +329,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta fallita", Toast.LENGTH_SHORT);
-                        toast.show();
+                        Log.d("MainActivity","Richiesta di informazioni dell'utente fallita");
                     }
                 }
         );
@@ -352,10 +351,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mapboxMap.moveCamera(newCameraPosition(
                                     impostaPosizione(latU, lonU, true)));//true vuole dire che la posizione che setto è quella dell'utente, quindi le impostazioni della camera saranno diverse
                         } else {
-                            Log.d("Play", "Nessuna posizione rilevata!");
                             mapboxMap.moveCamera(newCameraPosition(
                                     impostaPosizione(45.471113, 9.182237, false)));
-                            Toast.makeText(getApplicationContext(), "DoveSono: Nessuna posizione rilevata, assicurarsi di aver attivato il GPS.", Toast.LENGTH_SHORT).show();
+                            Snackbar.make(findViewById(R.id.mapView), "No position detected, activate GPS", Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show();
                         }
                     }
                 });
@@ -465,8 +464,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                                     mapboxMap.animateCamera(newCameraPosition(
                                             impostaPosizione(latU, lonU, true)));//true vuole dire che la posizione che setto è quella dell'utente, quindi le impostazioni della camera saranno diverse
                                 } else {
-                                    Log.d("Play", "Nessuna posizione rilevata!");
-                                    Toast.makeText(getApplicationContext(), "Nessuna posizione rilevata, assicurarsi di aver attivato il GPS.", Toast.LENGTH_SHORT).show();
+                                    Snackbar.make(findViewById(R.id.mapView), "No position detected, activate GPS", Snackbar.LENGTH_LONG)
+                                            .setAction("Action", null).show();
                                 }
                             }
                         });
@@ -536,7 +535,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Se NON trovo nessun oggetto con quell'ID
         if (nOggetto == -1 || objs.get(posizione).getId() != nOggetto) {
-            Toast.makeText(getApplicationContext(), "L'oggetto è scappato ! Continua a cercare ...", Toast.LENGTH_SHORT).show();
+            Snackbar.make(findViewById(R.id.mapView), "It seems there is nothing here... Keep searching", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
             return;
         }
         //ATTENZIONE, nOggetto non è mai false
@@ -563,7 +563,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 0) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "ATTENZIONE: devi fornire il permesso per utilizzare la localizzazione!", Toast.LENGTH_SHORT).show();
+                Snackbar.make(findViewById(R.id.mapView), "You must give location permissions", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
                 Intent tornaIndietro = new Intent(getApplicationContext(), MainActivity.class);
                 startActivity(tornaIndietro);
             }
