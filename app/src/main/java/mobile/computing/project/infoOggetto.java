@@ -66,20 +66,20 @@ public class infoOggetto extends Activity {
 
         ImageView imgView = findViewById(R.id.imageView);
         imgView.setImageBitmap(decodedImg);
-        TextView tv1=findViewById(R.id.textView);
-        tv1.setText(nome);
-        TextView tv2=findViewById(R.id.textView2);
+        TextView nomeOggetto=findViewById(R.id.textView);
+        nomeOggetto.setText(nome);
+        TextView dimensione=findViewById(R.id.textView2);
         TextView description=findViewById(R.id.textView9);
         if(size.equals("S")){
-            tv2.setText("I'm small!");
+            dimensione.setText("Dimensione: S");
             if(tipo.equals("CA"))
                 description.setText("Puoi guadagnare da 0 a 50 LP");
             else
-                description.setText("Puoi guadagnare 1 XP... o perdere da 0 a 50 LP");
+                description.setText("Puoi guadagnare 1 XP...o perdere da 0 a 50 LP");
         }
 
         if(size.equals("M")){
-            tv2.setText("Sono medio!");
+            dimensione.setText("Dimensione: M");
             if(tipo.equals("CA"))
                 description.setText("Puoi guadagnare da 25 a 75 LP");
             else
@@ -87,18 +87,18 @@ public class infoOggetto extends Activity {
         }
 
         if(size.equals("L")){
-            tv2.setText("Sono grande!");
+            dimensione.setText("Dimensione: L");
             if(tipo.equals("CA"))
                 description.setText("Pui guadagnare da 50 a 100 LP");
             else
-                description.setText("Puoi guadagnare 10 XP... o perdere da 50 a 100 LP ");
+                description.setText("Puoi guadagnare 10 XP...o perdere da 50 a 100 LP ");
         }
 
 
         Button lascia=findViewById(R.id.button6);
         if(tipo.equals("MO")){
-            lascia.setText("Run away!");
-        } else lascia.setText("Back");
+            lascia.setText("Scappa!");
+        } else lascia.setText("Non ho fame");
         lascia.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -108,8 +108,8 @@ public class infoOggetto extends Activity {
 
         Button azione=findViewById(R.id.button7);
         if(tipo.equals("MO")){
-            azione.setText("Fight");
-        } else azione.setText("Eat");
+            azione.setText("Combatti!");
+        } else azione.setText("Mangia!");
 
         Log.d("infoOggetto","posizione dell'oggetto: "+latitudine+ ", "+longitudine);
         Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));

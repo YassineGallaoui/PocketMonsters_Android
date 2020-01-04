@@ -36,19 +36,16 @@ public class fClassifica extends Fragment {
         RecyclerView list = view.findViewById(R.id.list);
 
         list.setLayoutManager(new LinearLayoutManager(getActivity()));
+        //creo un oggetto di tipo userAdapter
         final UserAdapter userAdapter = new UserAdapter(getContext(), getActivity(), UserModel.getInstance().getRanking());
-
+        //setto l'adapter alla lista(di tipo RecyclerView)
         list.setAdapter(userAdapter);
-
         return view;
     }
 
     @Override
     public void onResume() {
-        //onStart rende il fragment visibile all'utente
         super.onResume();
-
-        //creo un elemento di tipo RecyclerView e gli associo un elemento XML di tipo lista
 
         rankRequesteQueue = Volley.newRequestQueue(getActivity().getApplicationContext());
 

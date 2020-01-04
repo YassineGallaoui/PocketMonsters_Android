@@ -8,7 +8,6 @@ public class User {
     private String username;
     private int XP;
     private int LP;
-    //da rivedere
     private String image;
 
 

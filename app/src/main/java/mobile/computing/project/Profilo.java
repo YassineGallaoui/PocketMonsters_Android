@@ -41,7 +41,6 @@ public class Profilo extends AppCompatActivity {
     private String imgBase64Nuova = "";
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
