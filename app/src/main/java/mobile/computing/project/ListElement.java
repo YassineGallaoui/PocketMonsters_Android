@@ -37,12 +37,12 @@ public class ListElement extends RecyclerView.ViewHolder{
         listLP.setText(user.getLP() + " LP");
         listRankingPosition.setText(Integer.toString(i));
         String img=user.getImage();
-
         if (!(img.equals("null"))){
             Bitmap immagine = base64ToBitmap(img);
-            listImage.setImageBitmap(immagine);
+           listImage.setImageBitmap(immagine);
         }
-
+        else
+            listImage.setImageResource(R.mipmap.ranking_user);
     }
 
     private Bitmap base64ToBitmap(String b64){

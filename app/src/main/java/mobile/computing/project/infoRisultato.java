@@ -29,7 +29,7 @@ public class infoRisultato extends Activity {
 
         getWindow().setLayout((int)(width*.9), (int)(height*.8));
 
-        Log.d("infoRisultato","Sono entrato nella vuova activity");
+        Log.d("infoRisultato","Sono entrato nella nuova activity");
         Bundle extras = getIntent().getExtras();
         ImageView im1=findViewById(R.id.imageView);
         byte[] decodedString = Base64.decode(extras.getString("img"), Base64.DEFAULT);
@@ -38,15 +38,15 @@ public class infoRisultato extends Activity {
         TextView tv1=findViewById(R.id.textView2);
         if((extras.getString("life")).equals("false")){
             if((extras.getString("type")).equals("MO"))
-                tv1.setText("You Win !");
-            else tv1.setText("Healed !");
+                tv1.setText("Hai vinto!");
+            else tv1.setText("Mangiata !");
         } else {
-                tv1.setText("Defeated !");
+                tv1.setText("Sei morto...");
         }
-        TextView tv2=findViewById(R.id.textView4);
-        tv2.setText(extras.getString("lp"));
-        TextView tv3=findViewById(R.id.textView6);
-        tv3.setText(extras.getString("xp"));
+        TextView LifePoints=findViewById(R.id.textView4);
+        LifePoints.setText(extras.getString("lp"));
+        TextView ExpPoints=findViewById(R.id.textView6);
+        ExpPoints.setText(extras.getString("xp"));
 
         Button ok= findViewById(R.id.button7);
         ok.setOnClickListener(new View.OnClickListener() {
