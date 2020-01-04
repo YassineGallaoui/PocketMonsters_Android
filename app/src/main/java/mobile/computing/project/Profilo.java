@@ -16,9 +16,12 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -39,8 +42,6 @@ public class Profilo extends AppCompatActivity {
     private int PICK_IMAGE_REQUEST = 1;
     private String imgBase64 = "";
     private String imgBase64Nuova = "";
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,7 +67,7 @@ public class Profilo extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, new fClassifica());
         transaction.commit();
-
+        getRanking();
     }
 
     public void backProfilo(View w){
@@ -106,6 +107,16 @@ public class Profilo extends AppCompatActivity {
         profileLP.setText(lp);
     }
 
+    public void impostaLayoutF2 () {
+
+        RecyclerView list = findViewById(R.id.list);
+
+        list.setLayoutManager(new LinearLayoutManager(this));
+        final UserAdapter userAdapter = new UserAdapter(getApplicationContext(), this, UserModel.getInstance().getRanking());
+
+        list.setAdapter(userAdapter);
+    }
+
     public void whoIAm(){
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
@@ -141,6 +152,50 @@ public class Profilo extends AppCompatActivity {
                 }
         );
         requestQueue.add(getProfile_Request);
+    }
+
+    public void getRanking(){
+        Log.d("fClassifica","ho fatto l'onResume");
+        //creo un elemento di tipo RecyclerView e gli associo un elemento XML di tipo lista
+
+        rankRequesteQueue = Volley.newRequestQueue(getApplicationContext());
+
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("session_id", sessionId);
+            Log.d("fClassifica","session Id inserito");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest getRankingRequest = new JsonObjectRequest(
+                "https://ewserver.di.unimi.it/mobicomp/mostri/ranking.php",
+                jsonBody,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        UserModel.getInstance().uploadRanking(response);
+                        Log.d("fClassifica","ho ricevuto la risposta, ora eseguo");
+                        //userAdapter.notifyDataSetChanged();
+                        Log.d("richiesta andata bene", response.toString());
+                        impostaLayoutF2();
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
+                        toast.show();
+                    }
+
+                }
+        );
+
+        rankRequesteQueue.add(getRankingRequest);
     }
 
     //APRO LA FINESTRA PER FAR SCEGLIERE UNA NUOVA IMMAGINE ALL'UTENTE
