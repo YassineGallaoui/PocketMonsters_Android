@@ -67,7 +67,7 @@ public class Profilo extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, new fClassifica());
         transaction.commit();
-
+        getRanking();
     }
 
     public void backProfilo(View w){
