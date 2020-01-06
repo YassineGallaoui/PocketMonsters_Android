@@ -49,7 +49,12 @@ public class Profilo extends AppCompatActivity {
 
         //FACCIO CHIAMATA DI SERVER PER PRENDERE LE MIE INFORMAZIONI E IMPOSTARLE NEL FRAGMENT
         whoIAm();
-        getRanking();
+        try {
+            getRanking(); //TRY E CATCH NECESSARIO AI FINI DI DISTINZIONE FRA SMARTPHONE E TABLET
+        } catch (Exception e){
+            //NON FACCIO NULLA
+        }
+
     }
 
     public void vaiIndietro(View v){
@@ -176,7 +181,11 @@ public class Profilo extends AppCompatActivity {
                         UserModel.getInstance().uploadRanking(response);
                         //userAdapter.notifyDataSetChanged();
                         Log.d("richiesta andata bene", response.toString());
-                        impostaLayoutF2();
+                        try{
+                            impostaLayoutF2();
+                        } catch (Exception e){
+                            //NON FACCIO NULLA NEL CASO DI ECCEZIONE
+                        }
                     }
                 },
                 new Response.ErrorListener() {
