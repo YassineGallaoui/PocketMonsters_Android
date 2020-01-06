@@ -16,7 +16,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
@@ -50,7 +49,7 @@ public class Profilo extends AppCompatActivity {
 
         //FACCIO CHIAMATA DI SERVER PER PRENDERE LE MIE INFORMAZIONI E IMPOSTARLE NEL FRAGMENT
         whoIAm();
-
+        getRanking();
     }
 
     public void vaiIndietro(View v){
@@ -60,7 +59,7 @@ public class Profilo extends AppCompatActivity {
     public void fine(View v){
         //NASCONDO LA TASTIERA QUANDO DEVO SALVARE LE MODIFICHE APPORTATE
         InputMethodManager imm =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(findViewById(R.id.container).getWindowToken(), 0);
+        imm.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
 
         //CHIAMO LA FUNZIONE PER SALVARE I DATI
         saveChanges();
@@ -94,7 +93,7 @@ public class Profilo extends AppCompatActivity {
             profileImage.setImageBitmap(img);
         }
         //SE C'È UNA IMMAGINE SETTATA DAL SERVER ALLORA LA MOSTRO
-        if (!(image.equals("null")) && !imgBase64Nuova.equals("")) {
+        if (!imgBase64Nuova.equals("")) {
             imgBase64 = imgBase64Nuova;
             Bitmap img = base64ToBitmap(imgBase64);
             profileImage.setImageBitmap(img);
@@ -109,12 +108,9 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void impostaLayoutF2 () {
-
         RecyclerView list = findViewById(R.id.list);
-
         list.setLayoutManager(new LinearLayoutManager(this));
         final UserAdapter userAdapter = new UserAdapter(getApplicationContext(), this, UserModel.getInstance().getRanking());
-
         list.setAdapter(userAdapter);
     }
 
@@ -186,8 +182,8 @@ public class Profilo extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast toast = Toast.makeText(getApplicationContext(), "Richiesta Fallita", Toast.LENGTH_SHORT);
-                        toast.show();
+                        Snackbar.make(findViewById(R.id.profilee), "Richiesta di rete fallita", Snackbar.LENGTH_LONG)
+                                .setAction("Action", null).show();
                     }
 
                 }
@@ -246,7 +242,7 @@ public class Profilo extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("SetProfile", "Salvataggio modifiche andato a buon fine");
-                        Snackbar.make(findViewById(R.id.container), "Data successfully saved", Snackbar.LENGTH_LONG)
+                        Snackbar.make(findViewById(android.R.id.content), "Data successfully saved", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
                 },
