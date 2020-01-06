@@ -71,7 +71,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public static final String BASE_URL = "https://ewserver.di.unimi.it/mobicomp/mostri/";
     public static final String GET_MAP = "getmap.php";
     public static final String GET_IMAGE = "getimage.php";
-    public static final String FIGHT_EAT="fighteat.php";
     private static final String LAYER_MOSTRI = "LAYER_MOSTRI";
     private static final String LAYER_CARAMELLE = "LAYER_CARAMELLE";
     public String immBase64 = "";
@@ -465,12 +464,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Se NON trovo nessun oggetto con quell'ID
         if (nOggetto == -1 || objs.get(posizione).getId() != nOggetto) {
-            Snackbar.make(findViewById(R.id.mapView), "It seems there is nothing here... Keep searching", Snackbar.LENGTH_LONG)
+            Snackbar.make(findViewById(R.id.mapView), "Sembra che non ci sia niente qui... Non arrenderti, continua a cercare", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             return;
         }
-        //ATTENZIONE, nOggetto non è mai false
-        if (nOggetto != -1 || objs.get(posizione).getId() == nOggetto) { //Se trovo un oggetto con quell'ID
+
+        if (objs.get(posizione).getId() == nOggetto) { //Se trovo un oggetto con quell'ID
             //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
             richiediImgOggetto(nOggetto, posizione);
         }
@@ -526,59 +525,86 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
     public void richiediImgOggetto(final int numeroOggetto, final int posizione) {
-        //prendo il mio session id perchè serve per la chiamata
-        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-        String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
 
-        //sono pronto per fare la chiamata
-        myRequestQueue = Volley.newRequestQueue(this);
-        JSONObject jsonBody = new JSONObject();
-        try {
-            //metto il valore della session_id e del target_id nella stringa della richiesta
-            jsonBody.put("session_id", sessionId + "");
-            jsonBody.put("target_id", numeroOggetto + "");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        JsonObjectRequest getImage_Request = new JsonObjectRequest
-                (Request.Method.POST, BASE_URL + GET_IMAGE, jsonBody, new Response.Listener<JSONObject>() {
-
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            immBase64 = response.getString("img");
-                            //PRENDO LA MIA POSIZIONE ATTUALE
-                            fusedLocationClient.getLastLocation()
-                                    .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
-                                        @Override
-                                        public void onSuccess(Location location) {
-                                            // Got last known location. In some rare situations this can be null.
-                                            if (location != null) {
-                                                latU = location.getLatitude();
-                                                lonU = location.getLongitude();
-                                                mostraOggetto(numeroOggetto, posizione);
-                                            } else {
-                                                latU = 84.844431;
-                                                lonU = 26.399009;
-                                                mostraOggetto(numeroOggetto, posizione);
-                                            }
-                                        }
-                                    });
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+        //PRIMA DI FARE LA CHIAMATA CONTROLLO SE NON HO GIÀ L'IMMAGINE CHE MI SERVE
+        SharedPreferences sharedPrefImm = getApplicationContext().getSharedPreferences(getString(R.string.imgObj), Context.MODE_PRIVATE);
+        String imm = sharedPrefImm.getString(numeroOggetto+"", "");
+        if(!imm.equals("")){
+            Log.d("rICHIESTAiMG","Ho già l'immagine");
+            immBase64=imm;
+                //PRENDO LA MIA POSIZIONE ATTUALE
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            // Got last known location. In some rare situations this can be null.
+                            if (location != null) {
+                                latU = location.getLatitude();
+                                lonU = location.getLongitude();
+                                mostraOggetto(numeroOggetto, posizione);
+                            } else {
+                                Snackbar.make(findViewById(R.id.mapView), "No position detected, activate GPS", Snackbar.LENGTH_LONG)
+                                        .setAction("Action", null).show();
+                            }
                         }
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
-                    }
-                });
+                    });
+        } else {
+            Log.d("rICHIESTAiMG","Non ho l'immagine, la chiedo");
+            //prendo il mio session id perchè serve per la chiamata
+            SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                    getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+            String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
 
-        myRequestQueue.add(getImage_Request);
+            //sono pronto per fare la chiamata
+            myRequestQueue = Volley.newRequestQueue(this);
+            JSONObject jsonBody = new JSONObject();
+            try {//metto il valore della session_id e del target_id nella stringa della richiesta
+                jsonBody.put("session_id", sessionId + "");
+                jsonBody.put("target_id", numeroOggetto + "");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            JsonObjectRequest getImage_Request = new JsonObjectRequest
+                    (Request.Method.POST, BASE_URL + GET_IMAGE, jsonBody, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                immBase64 = response.getString("img");
+                                SharedPreferences.Editor editor = getApplicationContext().getSharedPreferences(getString(R.string.imgObj), Context.MODE_PRIVATE).edit();
+                                editor.putString(numeroOggetto+"", immBase64+"");
+                                editor.commit();
+                                //PRENDO LA MIA POSIZIONE ATTUALE
+                                fusedLocationClient.getLastLocation()
+                                        .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
+                                            @Override
+                                            public void onSuccess(Location location) {
+                                                // Got last known location. In some rare situations this can be null.
+                                                if (location != null) {
+                                                    latU = location.getLatitude();
+                                                    lonU = location.getLongitude();
+                                                    mostraOggetto(numeroOggetto, posizione);
+                                                } else {
+                                                    Snackbar.make(findViewById(R.id.mapView), "No position detected, activate GPS", Snackbar.LENGTH_LONG)
+                                                            .setAction("Action", null).show();
+                                                }
+                                            }
+                                        });
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("Play", "Non sono riuscito a fare la richiesta, qualcosa è andato storto.");
+                        }
+                    });
+
+            myRequestQueue.add(getImage_Request);
+        }
     }
 
     //MOSTRA LA SCHERMATA DELLE INFORMAZIONI DEL MOSTRO

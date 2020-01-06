@@ -108,8 +108,8 @@ public class Profilo extends AppCompatActivity {
             profileImage.setImageResource(R.mipmap.user);
         }
         profileUsername.setText(user);
-        profileXP.setText(xp);
-        profileLP.setText(lp);
+        profileXP.setText("XP: "+xp);
+        profileLP.setText("LP: "+lp);
     }
 
     public void impostaLayoutF2 () {
