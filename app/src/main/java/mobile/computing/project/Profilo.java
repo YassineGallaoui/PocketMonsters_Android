@@ -58,8 +58,11 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void fine(View v){
+        //NASCONDO LA TASTIERA QUANDO DEVO SALVARE LE MODIFICHE APPORTATE
         InputMethodManager imm =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(findViewById(R.id.container).getWindowToken(), 0);
+
+        //CHIAMO LA FUNZIONE PER SALVARE I DATI
         saveChanges();
     }
 
@@ -95,12 +98,10 @@ public class Profilo extends AppCompatActivity {
             imgBase64 = imgBase64Nuova;
             Bitmap img = base64ToBitmap(imgBase64);
             profileImage.setImageBitmap(img);
-            saveChanges();
         }
         //SE NON C'È ALCUNA IMMAGINE
-        if (!(image.equals("null")) && !imgBase64Nuova.equals("")) {
+        if (image.equals("null") && imgBase64Nuova.equals("")) {
             profileImage.setImageResource(R.mipmap.user);
-            saveChanges();
         }
         profileUsername.setText(user);
         profileXP.setText(xp);
@@ -155,7 +156,6 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void getRanking(){
-        Log.d("fClassifica","ho fatto l'onResume");
         //creo un elemento di tipo RecyclerView e gli associo un elemento XML di tipo lista
 
         rankRequesteQueue = Volley.newRequestQueue(getApplicationContext());
@@ -167,7 +167,6 @@ public class Profilo extends AppCompatActivity {
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("session_id", sessionId);
-            Log.d("fClassifica","session Id inserito");
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -179,7 +178,6 @@ public class Profilo extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         UserModel.getInstance().uploadRanking(response);
-                        Log.d("fClassifica","ho ricevuto la risposta, ora eseguo");
                         //userAdapter.notifyDataSetChanged();
                         Log.d("richiesta andata bene", response.toString());
                         impostaLayoutF2();
@@ -227,9 +225,6 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void saveChanges() {
-
-        Log.d("Profilo", "Cliccato fine");
-
         //FACCIO CHIAMATA AL SERVER PER SETTARE IL NUOVO NOME E/O LA NUOVA FOTO PROFILO
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
@@ -250,7 +245,7 @@ public class Profilo extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d("SetProfile", "Andato a buon fine");
+                        Log.d("SetProfile", "Salvataggio modifiche andato a buon fine");
                         Snackbar.make(findViewById(R.id.container), "Data successfully saved", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
@@ -258,7 +253,7 @@ public class Profilo extends AppCompatActivity {
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.d("SetProfile", "Andata male");
+                        Log.d("SetProfile", "Salvataggio modifiche andato male");
                         Snackbar.make(findViewById(R.id.container), "Error saving user informations", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }

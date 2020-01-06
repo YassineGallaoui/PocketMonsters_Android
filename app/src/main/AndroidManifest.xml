@@ -15,16 +15,9 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
         <activity
-            android:name=".infoRisultato"
-            android:theme="@style/infoObjTheme" />
-        <activity
-            android:name=".infoOggetto"
-            android:theme="@style/infoObjTheme" />
-        <activity
-            android:name=".Profilo" />
-        <activity
             android:name=".SplashScreen"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -37,7 +30,14 @@
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
-
+        <activity
+        android:name=".infoOggetto"
+        android:theme="@style/infoObjTheme" />
+        <activity
+            android:name=".infoRisultato"
+            android:theme="@style/infoObjTheme" />
+        <activity
+            android:name=".Profilo" />
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

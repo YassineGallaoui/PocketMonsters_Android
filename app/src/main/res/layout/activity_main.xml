@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     tools:context=".MainActivity">
 
         <com.mapbox.mapboxsdk.maps.MapView
@@ -15,12 +14,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            mapbox:mapbox_cameraTargetLat="45.464175"
-            mapbox:mapbox_cameraTargetLng="9.190233"
-            mapbox:mapbox_cameraZoom="16"
-            mapbox:mapbox_uiRotateGestures="false" >
-
-        </com.mapbox.mapboxsdk.maps.MapView>
+            />
 
         <TextView
             android:id="@+id/textView7"

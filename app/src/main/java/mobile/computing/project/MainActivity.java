@@ -69,7 +69,6 @@ import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, OnLocationClickListener, OnCameraTrackingChangedListener, PermissionsListener {
 
     public static final String BASE_URL = "https://ewserver.di.unimi.it/mobicomp/mostri/";
-    public static final String REGISTER="register.php";
     public static final String GET_MAP = "getmap.php";
     public static final String GET_IMAGE = "getimage.php";
     public static final String FIGHT_EAT="fighteat.php";
@@ -87,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public RequestQueue myRequestQueue = null;
     double latU;
     double lonU;
+    boolean riattivato=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -117,7 +117,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                if (locationResult != null) {
+                if (mapboxMap.getCameraPosition().zoom>14 || riattivato==false) {
                     for (Location location : locationResult.getLocations()) {
                         double temp = Math.pow(10, 4);
                         double latUA = Math.round(location.getLatitude() * temp) / temp; //NUOVA POSIZIONE RILEVATA ARROTONDATA
@@ -130,38 +130,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             mapboxMap.animateCamera(newCameraPosition(
                                     new CameraPosition.Builder()
                                             .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                                            //.tilt(80)
                                             .build()), 2000);
                             latU = location.getLatitude();
                             lonU = location.getLongitude();
                         }
-
-
-                        //LA SEGUENTE PARTE COMMENTATA SERVIREBBE PER METTERE IL CERCHIO ATTORNO ALL'UTENTE MA NON FUNZIONA ABBASTANZA BENE...
-                        //SE RIUSCIAMO A MIGLIORARLO PRIMA DELL'ESAME BENE, ALTRIMENTI NIENTE
-                    /*
-                    try{
-                        mapboxMap.getStyle().removeLayer(LAYER_CERCHIO);
-                        mapboxMap.getStyle().removeSource("circleId");
-                    } catch (Error e){
-                        Log.d("Play","Nessun layer precedente");
-                    }
-
-                    //POSIZIONO IL CERCHIO ATTORNO ALL'UTENTE
-                    GeoJsonSource geoJsonSource = new GeoJsonSource("circleId", Feature.
-                            fromGeometry(Point.fromLngLat(location.getLongitude(),
-                                    location.getLatitude())));
-                    mapboxMap.getStyle().addSource(geoJsonSource);
-
-                    CircleLayer circleLayer = new CircleLayer(LAYER_CERCHIO, "circleId");
-                    circleLayer.withProperties(
-                            PropertyFactory.circleRadius(30f),
-                            PropertyFactory.circleOpacity(.5f),
-                            PropertyFactory.circleColor(getResources().getColor(R.color.colorAccent))
-                    );
-                    Log.d("Play","Ho aggiunto il layer");
-                    mapboxMap.getStyle().addLayer(circleLayer);
-                    */
-
                     }
                 }
 
@@ -172,56 +145,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onResume() {
         super.onResume();
-        myRequestQueue= Volley.newRequestQueue(this);
-        //Controllo se nelle preferences ho già un session ID, nel caso non faccio la richiesta :)
-        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-        String ses_ID = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-        if(ses_ID!=""){
-            Log.d("MainActivity", "Session ID già presente, non faccio la chiamata per richiederne un altro.");
-            Log.d("MainActivity", "Session ID : "+ses_ID);
-        } else {
-            Log.d("MainActivity", "Session ID NON presente, faccio la chiamata per chiederne uno.");
-            JsonObjectRequest register_Request = new JsonObjectRequest
-                    (Request.Method.POST, BASE_URL + REGISTER, null, new Response.Listener<JSONObject>() {
-
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            Log.d("Main Activity", "Bene, ho creato la richiesta");
-
-                            //qua devo salvare il file nelle shared preferences, quindi lo faccio subito:
-                            SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                                    getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
-                            String session_ID;
-                            try {
-                                session_ID = response.getString("session_id");
-                                Log.d("MainActivity", "Il nuovo Session_ID ottenuto è il seguente: "+session_ID);
-                            } catch (JSONException e) {
-                                session_ID = "Attenzione! Non sono riuscito a leggere bene il session_ID, c'è stato qualche problema";
-                                e.printStackTrace();
-                            }
-                            SharedPreferences.Editor editor = sharedPref.edit();
-                            editor.putString(getString(R.string.preference_file_session_id), session_ID);
-                            editor.commit();
-
-                        }
-                    }, new Response.ErrorListener() {
-
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            // TODO: Handle error
-                            Log.d("Main Activity", "Non sono riuscito a fare la richiesta, qualcosa è andato storto :(");
-                        }
-                    });
-
-            myRequestQueue.add(register_Request);
-        }
         mapView.onResume();
         richiestaMappa();
-
     }
 
-    //METODO CHE RICHIEDE I DATI DELLA MAPPA AL SERVER
+    //RICHIEDE I DATI DELLA MAPPA AL SERVER
     public void richiestaMappa() {
         //CHIEDO AL SERVER QUALI SONO GLI OGGETTI PRESENTI NELLA MAPPA E LI SALVO
         myRequestQueue = Volley.newRequestQueue(this);
@@ -416,8 +344,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         // Create and customize the LocationComponent's options
         LocationComponentOptions customLocationComponentOptions = LocationComponentOptions.builder(this)
                 .layerBelow(LAYER_MOSTRI)
-                .accuracyAlpha(.7f)
+                .accuracyAlpha(.4f)
                 .accuracyColor(Color.CYAN)
+                .backgroundTintColor(Color.WHITE)
+                .bearingTintColor(Color.WHITE)
                 .build();
 
         // Get an instance of the component
@@ -439,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationComponent.setCameraMode(CameraMode.TRACKING_COMPASS);
 
         // Set the component's render mode
-        locationComponent.setRenderMode(RenderMode.NORMAL);
+        locationComponent.setRenderMode(RenderMode.COMPASS);
 
         // Add the location icon click listener
         locationComponent.addOnLocationClickListener(this);
@@ -550,7 +480,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //PER INIZIARE GI UPDATE DELLA POSIZIONE
     private void startLocationUpdates() {
         LocationRequest locationRequest = LocationRequest.create();
-        locationRequest.setInterval(1000);
+        locationRequest.setInterval(500);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         fusedLocationClient.requestLocationUpdates(locationRequest,
@@ -576,12 +506,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (find) {
             return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
-                    .zoom(15)
+                    .zoom(17)
+                    //.tilt(80)
                     .build();
         } else {
             return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
                     .zoom(11)
+                    //.tilt(80)
                     .build();
         }
     }
