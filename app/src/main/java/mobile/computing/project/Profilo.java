@@ -107,7 +107,8 @@ public class Profilo extends AppCompatActivity {
         if (image.equals("null") && imgBase64Nuova.equals("")) {
             profileImage.setImageResource(R.mipmap.user);
         }
-        profileUsername.setText(user);
+        if(!user.equals("null"))
+            profileUsername.setText(user);
         profileXP.setText("XP: "+xp);
         profileLP.setText("LP: "+lp);
     }

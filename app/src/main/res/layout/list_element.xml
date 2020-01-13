@@ -82,9 +82,11 @@ android:orientation="vertical">
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <View
-    android:id="@+id/divider"
-    android:layout_width="match_parent"
-    android:layout_height="5dp"
-    android:background="?android:attr/listDivider" />
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="?android:attr/listDivider"
+        android:backgroundTint="#ff5722"
+        android:backgroundTintMode="add" />
 </LinearLayout>
 

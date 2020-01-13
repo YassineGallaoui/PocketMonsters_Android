@@ -365,7 +365,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationComponent.setLocationComponentEnabled(true);
 
         // Set the component's camera mode
-        locationComponent.setCameraMode(CameraMode.TRACKING_COMPASS);
+        locationComponent.setCameraMode(CameraMode.TRACKING_GPS);
 
         // Set the component's render mode
         locationComponent.setRenderMode(RenderMode.COMPASS);
@@ -377,7 +377,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationComponent.addOnCameraTrackingChangedListener(this);
 
         FloatingActionButton you = findViewById(R.id.buttonYou);
-
 
         you.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -506,13 +505,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
                     .zoom(17)
-                    //.tilt(80)
                     .build();
         } else {
             return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
                     .zoom(11)
-                    //.tilt(80)
                     .build();
         }
     }
