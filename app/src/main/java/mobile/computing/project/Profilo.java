@@ -58,19 +58,14 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void vaiIndietro(View v){
+        saveChanges();
         startActivity(new Intent(getApplicationContext(), MainActivity.class));
     }
 
-    public void fine(View v){
-        //NASCONDO LA TASTIERA QUANDO DEVO SALVARE LE MODIFICHE APPORTATE
-        InputMethodManager imm =(InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getWindow().getDecorView().getRootView().getWindowToken(), 0);
 
-        //CHIAMO LA FUNZIONE PER SALVARE I DATI
-        saveChanges();
-    }
 
     public void vaiAlSecFragment(View v) {
+        saveChanges();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, new fClassifica());
         transaction.commit();
@@ -81,6 +76,7 @@ public class Profilo extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.container, new fUser());
         transaction.commit();
+
         whoIAm();
     }
 
@@ -252,8 +248,7 @@ public class Profilo extends AppCompatActivity {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("SetProfile", "Salvataggio modifiche andato a buon fine");
-                        Snackbar.make(findViewById(android.R.id.content), "Data successfully saved", Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show();
+
                     }
                 },
                 new Response.ErrorListener() {
