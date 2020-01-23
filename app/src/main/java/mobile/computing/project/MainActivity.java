@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public RequestQueue myRequestQueue = null;
     double latU;
     double lonU;
-    boolean riattivato=false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     0);
+            doveSono();
         }
 
         //BOTTONE PROFILO
@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
-                if (mapboxMap.getCameraPosition().zoom>14 || riattivato==false) {
+                if (mapboxMap.getCameraPosition().zoom>14) {
                     for (Location location : locationResult.getLocations()) {
                         double temp = Math.pow(10, 4);
                         double latUA = Math.round(location.getLatitude() * temp) / temp; //NUOVA POSIZIONE RILEVATA ARROTONDATA
@@ -266,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //TROVO E IMPOSTO POSIZIONE ATTUALE USER
     public void doveSono() {
         //PRENDO L'ULTIMA POSIZIONE NOTA E MI POSIZIONO LÌ
+        Log.d("MainActivity","HO CHIESTO DI ANDARE NELLA MIA POSIZIONE");
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(MainActivity.this);
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
@@ -273,6 +274,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     public void onSuccess(Location location) {
                         // Got last known location. In some rare situations this can be null.
                         if (location != null) {
+                            Log.d("MainActivity","POSIZIONE TROVATA");
                             latU = location.getLatitude();
                             lonU = location.getLongitude();
                             mapboxMap.moveCamera(newCameraPosition(
@@ -491,11 +493,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == 0) {
             if (grantResults.length > 0 && grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-                Snackbar.make(findViewById(R.id.mapView), "You must give location permissions", Snackbar.LENGTH_LONG)
+                Snackbar.make(findViewById(R.id.mapView), "È necessario fornire i permessi di localizzazione", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();
-                Intent tornaIndietro = new Intent(getApplicationContext(), MainActivity.class);
-                startActivity(tornaIndietro);
-            }
+            } else doveSono();
         }
     }
 
@@ -504,7 +504,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (find) {
             return new CameraPosition.Builder()
                     .target(new LatLng(lat, lon))
-                    .zoom(17)
+                    .zoom(13)
                     .build();
         } else {
             return new CameraPosition.Builder()

@@ -92,7 +92,7 @@ public class infoOggetto extends Activity {
         if(size.equals("L")){
             dimensione.setText("Dimensione: L");
             if(tipo.equals("CA"))
-                description.setText("Pui guadagnare da 50 a 100 LP");
+                description.setText("Puoi guadagnare da 50 a 100 LP");
             else
                 description.setText("Puoi guadagnare 10 XP");
                 description2.setText("... o perdere da 50 a 100 LP");

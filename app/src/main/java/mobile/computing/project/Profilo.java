@@ -12,7 +12,6 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,13 +50,12 @@ public class Profilo extends AppCompatActivity {
         whoIAm();
         try {
             getRanking(); //TRY E CATCH NECESSARIO AI FINI DI DISTINZIONE FRA SMARTPHONE E TABLET
-        } catch (Exception e){
-            //NON FACCIO NULLA
+        } catch (Exception ignored){
         }
-
     }
 
     public void vaiIndietro(View v){
+        if(controlloCampi()) return;
         saveChanges();
         startActivity(new Intent(getApplicationContext(), MainActivity.class));
     }
@@ -65,19 +63,41 @@ public class Profilo extends AppCompatActivity {
 
 
     public void vaiAlSecFragment(View v) {
+        if(controlloCampi()) return;
         saveChanges();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, new fClassifica());
+        transaction.replace(R.id.container, new fClassifica()).addToBackStack(null);
         transaction.commit();
         getRanking();
     }
 
-    public void backProfilo(View w){
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, new fUser());
-        transaction.commit();
+    public boolean controlloCampi(){
+        EditText username = findViewById(R.id.username);
+        String value = username.getText().toString();
+        if(value.length()>14){
+            Log.d("Profilo", "Username troppo lungo, massimo 14 caratteri.");
+            Snackbar.make(findViewById(R.id.container), "Username troppo lungo massimo 14 caratteri.", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return true;
+        }
 
-        whoIAm();
+        if(imgBase64.length()>137000){
+            Log.d("Profilo", "Immagine troppo grande, dimensioni massime 100KB.");
+            Snackbar.make(findViewById(R.id.container), "Immagine troppo grande, dimensioni massime 100KB.", Snackbar.LENGTH_LONG)
+                    .setAction("Action", null).show();
+            return true;
+        }
+        return false;
+    }
+
+    public void backProfilo(View w){
+        if(getFragmentManager().getBackStackEntryCount() > 0){
+            getFragmentManager().popBackStackImmediate();
+        }
+        else{
+            super.onBackPressed();
+        }
+
     }
 
     public void impostaLayoutF1(String user, String image, String xp, String lp) {
@@ -105,8 +125,8 @@ public class Profilo extends AppCompatActivity {
         }
         if(!user.equals("null"))
             profileUsername.setText(user);
-        profileXP.setText("XP: "+xp);
-        profileLP.setText("LP: "+lp);
+        profileXP.setText(xp+" XP");
+        profileLP.setText(lp+" LP");
     }
 
     public void impostaLayoutF2 () {
@@ -145,7 +165,7 @@ public class Profilo extends AppCompatActivity {
                     @Override
                     public void onErrorResponse(VolleyError error) {
                         Log.d("Profilo", "Richiesta fallita");
-                        Snackbar.make(findViewById(R.id.container), "Error requesting user informations", Snackbar.LENGTH_LONG)
+                        Snackbar.make(findViewById(R.id.container), "Errore nella richiesta di informazioni", Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show();
                     }
                 }
@@ -227,12 +247,13 @@ public class Profilo extends AppCompatActivity {
     }
 
     public void saveChanges() {
+        EditText username = findViewById(R.id.username);
+        String value = username.getText().toString();
+
         //FACCIO CHIAMATA AL SERVER PER SETTARE IL NUOVO NOME E/O LA NUOVA FOTO PROFILO
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
         String sessionId = sharedPref.getString(getString(R.string.preference_file_session_id), "");
-        EditText username = findViewById(R.id.username);
-        String value = username.getText().toString();
         RequestQueue saveQueue = Volley.newRequestQueue(this);
         JSONObject jsonBody = new JSONObject();
         try {
