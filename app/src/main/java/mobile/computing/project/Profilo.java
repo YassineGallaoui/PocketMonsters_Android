@@ -81,14 +81,10 @@ public class Profilo extends AppCompatActivity {
             imm.hideSoftInputFromWindow(viewV.getWindowToken(), 0);
         }
 
-        /*InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
-        assert imm != null;
-        imm.hideSoftInputFromWindow(Objects.requireNonNull(this.getCurrentFocus()).getWindowToken(), 0);*/
-
         EditText username = findViewById(R.id.username);
         String value = username.getText().toString();
-        if(value.length()>14){
-            Log.d("Profilo", "Username troppo lungo, massimo 14 caratteri.");
+        if(value.length()>15){
+            Log.d("Profilo", "Username troppo lungo, massimo 15 caratteri.");
             Snackbar.make(findViewById(R.id.container), "Username troppo lungo massimo 14 caratteri.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             return false;

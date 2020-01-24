@@ -17,7 +17,8 @@
         <activity
             android:name=".SplashScreen"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -25,22 +26,26 @@
         </activity>
         <activity
             android:name=".MainActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
             </intent-filter>
         </activity>
         <activity
         android:name=".infoOggetto"
-        android:theme="@style/infoObjTheme" />
+        android:theme="@style/infoObjTheme"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".infoRisultato"
-            android:theme="@style/infoObjTheme" />
+            android:theme="@style/infoObjTheme"
+            android:screenOrientation="portrait" />
         <activity
-            android:name=".Profilo" />
+            android:name=".Profilo"
+            android:screenOrientation="portrait"/>
         <meta-data
             android:name="preloaded_fonts"
-            android:resource="@array/preloaded_fonts" />
+            android:resource="@array/preloaded_fonts"  />
     </application>
 
 </manifest>

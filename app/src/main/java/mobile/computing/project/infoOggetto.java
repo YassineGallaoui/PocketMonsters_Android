@@ -121,7 +121,7 @@ public class infoOggetto extends Activity {
         Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));
 
             //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
-        if(TurfMeasurement.distance( posO, posU)<0.05){ //QUESTO ANDRÀ CAMBIATO IN MAGGIORE!!
+        if(TurfMeasurement.distance( posO, posU)>0.05){ //QUESTO ANDRÀ CAMBIATO IN MAGGIORE!!
             //azione.setEnabled(false);
             azione.setOnClickListener(new View.OnClickListener() {
                 @Override
