@@ -5,7 +5,7 @@
         <item name="colorPrimary">@color/primaryColor</item>
     </style>
 
-    <style name="infoObjTheme">
+    <style name="infoObjTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
         <item name="android:windowNoTitle">true</item>

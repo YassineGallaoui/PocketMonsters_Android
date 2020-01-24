@@ -5,9 +5,12 @@
     <string name="preference_file_session_id" />
     <string name="cambia_immagine">Change image</string>
     <string name="imgProfilo">Immagine di profilo dell\'utente</string>
-    <string name="classifica"> Ranking </string>
+    <string name="classifica"> Classifica </string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="imgObj" />
+    <string name="life_points">Life Points</string>
+    <string name="experience_points">Experience Points</string>
+    <string name="ok">OK !</string>
 </resources>

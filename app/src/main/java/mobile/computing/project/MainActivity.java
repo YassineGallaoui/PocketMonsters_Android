@@ -465,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         //Se NON trovo nessun oggetto con quell'ID
         if (nOggetto == -1 || objs.get(posizione).getId() != nOggetto) {
-            Snackbar.make(findViewById(R.id.mapView), "Sembra che non ci sia niente qui... Non arrenderti, continua a cercare", Snackbar.LENGTH_LONG)
+            Snackbar.make(findViewById(R.id.mapView), "Sembra che non ci sia niente qui... Non arrenderti, continua a cercare !", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             return;
         }
@@ -527,14 +527,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         SharedPreferences sharedPrefImm = getApplicationContext().getSharedPreferences(getString(R.string.imgObj), Context.MODE_PRIVATE);
         String imm = sharedPrefImm.getString(numeroOggetto+"", "");
         if(!imm.equals("")){
-            Log.d("rICHIESTAiMG","Ho già l'immagine");
+            Log.d("RichiestaImmagine","Ho già l'immagine");
             immBase64=imm;
                 //PRENDO LA MIA POSIZIONE ATTUALE
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(MainActivity.this, new OnSuccessListener<Location>() {
                         @Override
                         public void onSuccess(Location location) {
-                            // Got last known location. In some rare situations this can be null.
                             if (location != null) {
                                 latU = location.getLatitude();
                                 lonU = location.getLongitude();
@@ -546,7 +545,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         }
                     });
         } else {
-            Log.d("rICHIESTAiMG","Non ho l'immagine, la chiedo");
+            Log.d("RichiestaImmagine","Non ho l'immagine, la chiedo");
             //prendo il mio session id perchè serve per la chiamata
             SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                     getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);

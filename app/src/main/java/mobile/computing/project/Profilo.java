@@ -12,6 +12,7 @@ import android.provider.MediaStore;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -54,40 +55,52 @@ public class Profilo extends AppCompatActivity {
         }
     }
 
-    public void vaiIndietro(View v){
-        if(controlloCampi()) return;
-        saveChanges();
-        startActivity(new Intent(getApplicationContext(), MainActivity.class));
+    public void vaiIndietro(View v) {
+        if(controlloCampi()) {
+            saveChanges();
+            startActivity(new Intent(getApplicationContext(), MainActivity.class));
+        }
     }
 
-
-
     public void vaiAlSecFragment(View v) {
-        if(controlloCampi()) return;
-        saveChanges();
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.container, new fClassifica()).addToBackStack(null);
-        transaction.commit();
-        getRanking();
+        Log.d("Profilo", "Sono entrato nella funzione");
+        if(controlloCampi()){
+            saveChanges();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.container, new fClassifica()).addToBackStack(null);
+            transaction.commit();
+            getRanking();
+        }
     }
 
     public boolean controlloCampi(){
+
+        View viewV = this.getCurrentFocus();
+        if (viewV != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(viewV.getWindowToken(), 0);
+        }
+
+        /*InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(Activity.INPUT_METHOD_SERVICE);
+        assert imm != null;
+        imm.hideSoftInputFromWindow(Objects.requireNonNull(this.getCurrentFocus()).getWindowToken(), 0);*/
+
         EditText username = findViewById(R.id.username);
         String value = username.getText().toString();
         if(value.length()>14){
             Log.d("Profilo", "Username troppo lungo, massimo 14 caratteri.");
             Snackbar.make(findViewById(R.id.container), "Username troppo lungo massimo 14 caratteri.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-            return true;
+            return false;
         }
 
         if(imgBase64.length()>137000){
             Log.d("Profilo", "Immagine troppo grande, dimensioni massime 100KB.");
             Snackbar.make(findViewById(R.id.container), "Immagine troppo grande, dimensioni massime 100KB.", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     public void backProfilo(View w){
@@ -97,7 +110,6 @@ public class Profilo extends AppCompatActivity {
         else{
             super.onBackPressed();
         }
-
     }
 
     public void impostaLayoutF1(String user, String image, String xp, String lp) {
@@ -136,7 +148,7 @@ public class Profilo extends AppCompatActivity {
         list.setAdapter(userAdapter);
     }
 
-    public void whoIAm(){
+    public void whoIAm() {
         //CHIEDO AL SERVER L'IMMAGINE DA METTERE
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);

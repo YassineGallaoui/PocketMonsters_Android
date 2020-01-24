@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -22,10 +21,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.snackbar.Snackbar;
 import com.mapbox.turf.TurfMeasurement;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Objects;
 
 public class infoOggetto extends Activity {
 
@@ -57,11 +59,11 @@ public class infoOggetto extends Activity {
         String nome= extras.getString("nome");
         tipo= extras.getString("tipo");
         String size= extras.getString("size");
-        Double latitudine= Double.valueOf(extras.getString("lat"));
-        Double longitudine= Double.valueOf(extras.getString("lon"));
+        double latitudine= Double.valueOf(Objects.requireNonNull(extras.getString("lat")));
+        double longitudine= Double.valueOf(Objects.requireNonNull(extras.getString("lon")));
         com.mapbox.geojson.Point posO= com.mapbox.geojson.Point.fromLngLat(longitudine, latitudine);
-        Double latU= Double.valueOf(extras.getString("latU"));
-        Double lonU= Double.valueOf(extras.getString("lonU"));
+        double latU= Double.valueOf(Objects.requireNonNull(extras.getString("latU")));
+        double lonU= Double.valueOf(Objects.requireNonNull(extras.getString("lonU")));
         com.mapbox.geojson.Point posU = com.mapbox.geojson.Point.fromLngLat(lonU, latU);
 
         ImageView imgView = findViewById(R.id.imageView);
@@ -117,8 +119,19 @@ public class infoOggetto extends Activity {
 
         Log.d("infoOggetto","posizione dell'oggetto: "+latitudine+ ", "+longitudine);
         Log.d("infoOggetto","Distanza rilevata: "+TurfMeasurement.distance( posO, posU));
+
             //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
-        if(TurfMeasurement.distance( posO, posU)>0.05){ //QUESTO DOVRÀ ESSERE CAMBIATO DA MAGGIORE A MINORE
+        if(TurfMeasurement.distance( posO, posU)<0.05){ //QUESTO ANDRÀ CAMBIATO IN MAGGIORE!!
+            //azione.setEnabled(false);
+            azione.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    //Toast.makeText(getApplicationContext(), "Sei troppo lento!", Toast.LENGTH_LONG).show();
+                    Snackbar.make(findViewById(android.R.id.content), "Sei troppo lontano!", Snackbar.LENGTH_LONG).show();
+                }
+            });
+        } else {
+            //SE L'OGGETTO DI INTERESSE È LONTANO MASSIMO 50 METRI, ALLORA POSSO FARE FIGHTEAT, ALTRIMENTI NO
             azione.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -169,13 +182,6 @@ public class infoOggetto extends Activity {
                             });
 
                     myRequestQueue.add(getResults_Request);
-                }
-            });
-        } else {
-            azione.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Toast.makeText(getApplicationContext(), "Oggetto troppo lontano! Avvicinarsi fino a raggiungere una distanza minore di 50!", Toast.LENGTH_SHORT).show();
                 }
             });
         }
