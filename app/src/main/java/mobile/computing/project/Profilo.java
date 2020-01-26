@@ -81,15 +81,6 @@ public class Profilo extends AppCompatActivity {
             imm.hideSoftInputFromWindow(viewV.getWindowToken(), 0);
         }
 
-        EditText username = findViewById(R.id.username);
-        String value = username.getText().toString();
-        if(value.length()>15){
-            Log.d("Profilo", "Username troppo lungo, massimo 15 caratteri.");
-            Snackbar.make(findViewById(R.id.container), "Username troppo lungo massimo 14 caratteri.", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null).show();
-            return false;
-        }
-
         if(imgBase64.length()>137000){
             Log.d("Profilo", "Immagine troppo grande, dimensioni massime 100KB.");
             Snackbar.make(findViewById(R.id.container), "Immagine troppo grande, dimensioni massime 100KB.", Snackbar.LENGTH_LONG)
