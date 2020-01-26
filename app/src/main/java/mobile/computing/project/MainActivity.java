@@ -9,6 +9,8 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PointF;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Log;
@@ -544,7 +546,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if(!imm.equals("")){
             Log.d("RichiestaImmagine","Ho già l'immagine");
             immBase64=imm;
-            mostraOggetto(numeroOggetto, posizione);
+            ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                    connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED)
+                    mostraOggetto(numeroOggetto, posizione);
+            else Snackbar.make(findViewById(R.id.mapView), "Errore di connessione", Snackbar.LENGTH_LONG).setAction("Action", null).show();;
         } else {
             Log.d("RichiestaImmagine","Non ho l'immagine, la chiedo");
             //prendo il mio session id perchè serve per la chiamata

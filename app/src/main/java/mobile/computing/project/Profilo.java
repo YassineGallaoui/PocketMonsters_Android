@@ -82,8 +82,8 @@ public class Profilo extends AppCompatActivity {
         }
 
         if(imgBase64.length()>137000){
-            Log.d("Profilo", "Immagine troppo grande, dimensioni massime 100KB.");
-            Snackbar.make(findViewById(R.id.container), "Immagine troppo grande, dimensioni massime 100KB.", Snackbar.LENGTH_LONG)
+            Log.d("Profilo", "Immagine troppo grande, numero di ");
+            Snackbar.make(findViewById(R.id.container), "Immagine troppo grande", Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show();
             return false;
         }
