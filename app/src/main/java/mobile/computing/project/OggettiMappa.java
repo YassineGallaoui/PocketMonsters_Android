@@ -36,6 +36,10 @@ public class OggettiMappa {
 
     }
 
+    public Oggetto getOggetto(int i) {
+        return OggettiMappaList.get(i);
+    }
+
     public void svuota(){
         OggettiMappaList.clear();
     }

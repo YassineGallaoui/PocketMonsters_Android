@@ -12,11 +12,12 @@ public class Oggetto {
     private String type;
     private String size;
     private String name;
+    private String img;
 
     public Oggetto() {
     }
 
-    public Oggetto(int ID, double lat, double lon, String tipo, String grandezza, String nome) {
+    public Oggetto(int ID, double lat, double lon, String tipo, String grandezza, String nome, String immagine) {
         this();
         this.id = ID;
         this.latitude = lat;
@@ -24,6 +25,7 @@ public class Oggetto {
         this.type = tipo;
         this.size = grandezza;
         this.name = nome;
+        this.img = immagine;
     }
 
     public Oggetto(JSONObject oggettoJSON) {
@@ -35,6 +37,7 @@ public class Oggetto {
             this.type = oggettoJSON.getString("type");
             this.size = oggettoJSON.getString("size");
             this.name = oggettoJSON.getString("name");
+            this.img = "";
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -62,6 +65,18 @@ public class Oggetto {
 
     public String getName() {
         return name;
+    }
+
+    public void setImg(JSONObject immagine) {
+        try {
+            this.img=immagine.getString("img");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getImg() {
+        return img;
     }
 
 }

@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private boolean isInTrackingMode=true;
     int primaVolta = -1;
     public RequestQueue myRequestQueue = null;
+    public RequestQueue myRequestQueue2 = null;
     double latU;
     double lonU;
 
@@ -210,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         OggettiMappa.getInstance().svuota();
                         OggettiMappa.getInstance().populate(response);
                         Log.d("MainActivity", "Ho chiesto i dati della mappa");
+                        richiediImgOggetti();
                         mapView.getMapAsync(MainActivity.this);
                     }
                 }, new Response.ErrorListener() {
@@ -220,6 +222,50 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
 
         myRequestQueue.add(getMap_Request);
+    }
+
+    private void richiediImgOggetti() {
+        for(int i=0; i<OggettiMappa.getInstance().getSize(); i++){
+
+            final Oggetto obj = OggettiMappa.getInstance().getOggetto(i);
+            final int idOggetto = obj.getId();
+            Log.d("Immaginissima","Sono stupenda hahahah l' id è: "+idOggetto);
+
+            //CHIEDO AL SERVER QUALI SONO GLI OGGETTI PRESENTI NELLA MAPPA E LI SALVO
+            myRequestQueue2 = Volley.newRequestQueue(this);
+            JSONObject jsonBody = new JSONObject();
+            try {
+                //vado a prendere il mio session_id dalle shared preferences
+                SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                        getString(R.string.preference_file_session_id), Context.MODE_PRIVATE);
+                String ses_ID = sharedPref.getString(getString(R.string.preference_file_session_id), "");
+                //metto il valore della session_id nella stringa della richiesta
+                jsonBody.put("session_id", ses_ID);
+                jsonBody.put("target_id", idOggetto);
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            JsonObjectRequest getImg_Request = new JsonObjectRequest
+                    (Request.Method.POST, BASE_URL + GET_IMAGE, jsonBody, new Response.Listener<JSONObject>() {
+
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            obj.setImg(response);
+                            Log.d("Immaginissima","ok, ho impostato l' immagine di id:" +idOggetto);
+                        }
+                    }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Log.d("Immaginissima", "OPSSS, qualcosa è andato storto.");
+                        }
+                    });
+
+            myRequestQueue2.add(getImg_Request);
+
+        }
+
     }
 
     //IMPOSTO LE ICONE SULLA MAPPA
@@ -488,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         if (objs.get(posizione).getId() == nOggetto) {//Se trovo un oggetto con quell'ID
             //FACCIO LA CHIAMATA PER PRENDERE L'IMMAGINE
-            richiediImgOggetto(nOggetto, posizione);
+            mostraOggetto(nOggetto, posizione);
         }
 
     }
@@ -537,7 +583,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onSaveInstanceState(outState);
     }
 
-    //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
+/*    //RICHIEDI INFORMAZIONI DI UN OGGETTO SPECIFICO
     public void richiediImgOggetto(final int numeroOggetto, final int posizione) {
 
         //PRIMA DI FARE LA CHIAMATA CONTROLLO SE NON HO GIÀ L'IMMAGINE CHE MI SERVE
@@ -593,7 +639,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
             myRequestQueue.add(getImage_Request);
         }
-    }
+    }*/
 
     //MOSTRA LA SCHERMATA DELLE INFORMAZIONI DEL MOSTRO
     public void mostraOggetto(int nOggetto, int posizione) {
@@ -610,7 +656,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         apriInfo.putExtra("lon", Double.toString(Math.round(obj.getLon() * cifre) / cifre));
         apriInfo.putExtra("size", obj.getSize());
         apriInfo.putExtra("nome", obj.getName());
-        apriInfo.putExtra("img", immBase64);
+        apriInfo.putExtra("img", obj.getImg());
         startActivity(apriInfo);
         Log.d("MainActivity", "Ho aperto l'activity");
     }
